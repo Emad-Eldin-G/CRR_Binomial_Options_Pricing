@@ -14,10 +14,8 @@ st.set_page_config(
 
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
 
-st.sidebar.image("./static/uni_logo.jpg")
 st.sidebar.markdown("""
-## Computer Science Final Year Project  
-### Emadeldin Osman (eo161)
+### Created by Emadeldin Osman
 """)
 
 with st.sidebar.container():
