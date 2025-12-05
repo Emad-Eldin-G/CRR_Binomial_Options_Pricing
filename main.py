@@ -6,6 +6,16 @@ from components.option_inputs import option_inputs
 from components.market_inputs import market_inputs
 from components.algorithm_inputs import algorithm_inputs
 
+from components.price_output import price_output
+from components.compute_output import compute_output
+from components.binomial_tree_output import binomial_tree_output
+
+from algorithm.algorithm_manager import alogorithm_manager
+
+st.session_state.setdefault("Prod", False)
+st.session_state.setdefault("option_price", None)
+st.session_state.setdefault("price_compute_on", False)
+
 st.set_page_config(
     page_title="Binomial Option Pricing",
     layout="wide",
@@ -27,29 +37,15 @@ with st.sidebar.container():
 
     with st.container(vertical_alignment="center", horizontal_alignment="center"):
         st.container(height=5, border=False) # Spacer for visual purposes
-        st.button("Compute Option Price", type="primary", width="stretch")
+        price_button = st.button("Compute Option Price", type="primary", width="stretch")
+        if price_button:
+            st.session_state.price_compute_on = True
+            alogorithm_manager()
 
 
 with st.container(border=True, horizontal=True):
-    with st.container():
-        st.header("Option Price Output")
-        if st.session_state.get("price_compute_on"):
-            while st.session_state.get("price_compute_on"):
-                with st.spinner("Computing option price..."):
-                    # Placeholder for actual computation logic
-                    time.sleep(2)  # Simulate computation delay
-                    st.session_state.option_price = 42.00  # Dummy option price
-                    st.session_state.price_compute_on = False  # Turn off the loop
-            
-            st.success(f"The computed option price is: ${st.session_state.option_price}", )
-        else:
-            st.info("Option price will be displayed here after computation.")
+    price_output(st.session_state.get("option_price", {}))
+    compute_output(st.session_state.get("option_price", {}))
 
-    with st.container():
-        st.header("Computation Time")
-        st.info("Time taken for computation will be displayed here.")
-
-tree_continaer = st.container(border=True)
-with tree_continaer:
-    st.header("Binomial Tree Visualization", help="Visual representation of the binomial tree used in option pricing, with the up and down values at each node.")
-    st.info("Binomial tree visualization will be displayed here.")
+with st.container(border=True):
+    binomial_tree_output(st.session_state.get("binomial_tree", None))

@@ -1,11 +1,10 @@
 import streamlit as st
-import time
 
 @st.fragment
-def price_output(price_data):
+def compute_output(price_data):
     st.markdown(
         """
-        <h2 style="text-align: center"><strong>Option Price</strong> </h2>
+        <h2 style="text-align: center"><strong>Computation Time</strong> </h2>
         """,
         unsafe_allow_html=True,
     )
@@ -15,25 +14,25 @@ def price_output(price_data):
     # -------------------------
     if st.session_state.get("price_compute_on"):
 
-        # Price has not yet been computed
+        # computation hasn’t finished yet
         if st.session_state.get("option_price") is None:
-            with st.spinner("Waiting for option price computation..."):
-                st.write("Calculating...")
+            with st.spinner("Computing option price..."):
+                st.write("Calculating computation time...")
             return
-        
-        # Price is now ready
+
+        # computation has finished → show result
         result = st.session_state.option_price
         st.markdown(
             f"""
             <div style="padding: 10px; text-align: center;">
-                <h2 style="color: #4CAF50; font-size: 80px"><strong>${result["price"]:.2f}</strong></h2>
+                <h2 style="color: #2196F3; font-size: 80px"><strong>{result['compute_time']:.2f} secs</strong></h2>
             </div>
             """,
-            unsafe_allow_html=True,
+            unsafe_allow_html=True
         )
         return
 
     # -------------------------
     # idle state
     # -------------------------
-    st.info("Option price will be displayed here after computation.")
+    st.info("Time taken for computation will be displayed here.")
