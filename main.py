@@ -15,7 +15,7 @@ st.set_page_config(
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
 
 st.sidebar.markdown("""
-### Created by Emadeldin Osman
+### Created by [Emadeldin Osman](https://github.com/Emad-Eldin-G)
 """)
 
 with st.sidebar.container():
