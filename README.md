@@ -5,8 +5,8 @@
 
 
 - Streamlit Dashboard 🟢
-- Python Dynamic Programming 🟠
-- NumPy Vectorization 🔴
+- Python Dynamic Programming 🟢
+- NumPy Vectorization 🟠
 - C++ Dynamic Programming 🔴
 - Binomial Tree Visualizer 🔴
   
