@@ -4,7 +4,7 @@ import streamlit as st
 def compute_output(price_data):
     st.markdown(
         """
-        <h2 style="text-align: center"><strong>Computation Time</strong> </h2>
+        <h2 style="text-align: center"><strong>Metrics</strong> </h2>
         """,
         unsafe_allow_html=True,
     )
@@ -24,8 +24,9 @@ def compute_output(price_data):
         result = st.session_state.option_price
         st.markdown(
             f"""
-            <div style="padding: 10px; text-align: center;">
-                <h2 style="color: #2196F3; font-size: 80px"><strong>{result['compute_time']:.2f} secs</strong></h2>
+            <div style="padding: 5px; text-align: center; align-items: center;">
+                <h2 style="color: #2196F3; font-size: 25px"><strong><section style="color: white; font-size: 25px">Runtime:</section> {st.session_state["runtime"]:.2f} secs</strong></h2>
+                <h2 style="color: #2196F3; font-size: 25px"><strong><section style="color: white; font-size: 25px">Risk-Neutral Probability:</section> {result['rnp']:.3f}%</strong></h2>
             </div>
             """,
             unsafe_allow_html=True

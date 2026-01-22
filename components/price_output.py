@@ -26,7 +26,7 @@ def price_output(price_data):
         st.markdown(
             f"""
             <div style="padding: 10px; text-align: center;">
-                <h2 style="color: #4CAF50; font-size: 80px"><strong>${result["price"]:.2f}</strong></h2>
+                <h2 style="color: #4CAF50; font-size: 80px"><strong>${result["price"]:.4f}</strong></h2>
             </div>
             """,
             unsafe_allow_html=True,
