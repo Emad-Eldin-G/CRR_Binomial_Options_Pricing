@@ -1,13 +1,17 @@
 import streamlit as st
 
-from components.stock_inputs import stock_inputs
-from components.option_inputs import option_inputs
-from components.market_inputs import market_inputs
-from components.algorithm_inputs import algorithm_inputs
-
-from components.price_output import price_output
-from components.metrics_output import compute_output
-from components.binomial_tree_output import binomial_tree_output
+from components.input_components import (
+    stock_inputs,
+    option_inputs,
+    market_inputs,
+    algorithm_inputs,
+)
+from components.output_components import (
+    price_output,
+    runtime_output,
+    greeks_output,
+    binomial_tree_output,
+)
 
 from algorithm.algorithm_manager import alogorithm_manager
 
@@ -22,10 +26,8 @@ st.set_page_config(
 
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
 
-st.sidebar.image("./static/uni_logo.jpg")
 st.sidebar.markdown("""
-## Computer Science Final Year Project  
-### Emadeldin Osman (eo161)
+### Emadeldin Osman
 """)
 
 with st.sidebar.container():
@@ -40,12 +42,20 @@ with st.sidebar.container():
         price_button = st.button("Compute Option Price", type="primary", width="stretch")
         if price_button:
             st.session_state.price_compute_on = True
-            alogorithm_manager(S0, K, T, r, N, vol, option_type, exercise)
+            alogorithm_manager(S0, K, T, r, N, vol, option_type, exercise, method=method)
 
 
-with st.container(border=True, horizontal=True):
-    price_output(st.session_state.get("option_price", {}))
-    compute_output(st.session_state.get("option_price", {}))
+st.divider()
+price_data = st.session_state.get("option_price")
 
-with st.container(border=True):
-    binomial_tree_output(st.session_state.get("binomial_tree", None))
+c1, c2 = st.columns(2)
+with c1:
+    price_output(price_data)
+with c2:
+    runtime_output(price_data)
+
+st.divider()
+greeks_output(price_data)
+
+st.divider()
+binomial_tree_output(st.session_state.get("binomial_tree"))
