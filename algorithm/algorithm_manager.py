@@ -1,6 +1,6 @@
 import streamlit as st
 from algorithm import python_dp, python_numpy, cpp
-from algorithm.model import crr_up_down
+from algorithm.volatility import crr_up_down
 
 
 PRICERS = {
