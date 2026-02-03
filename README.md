@@ -1,15 +1,7 @@
 # Cox, Ross and Rubinstein Binomial Method for Options Pricing using Backward Induction
 > In progress...
-
 > European and American Put/Call Option pricing.
 
-
-- Streamlit Dashboard 🟢
-- Python Dynamic Programming 🟢
-- NumPy Vectorization 🟢
-- C++ Dynamic Programming 🟠
-- Binomial Tree Visualizer 🔴
-  
 ## How to run project
 ### 1. Setup Environment 
 - go to main directory 
