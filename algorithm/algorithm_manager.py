@@ -1,5 +1,5 @@
 import streamlit as st
-from pricing import dp_price, np_price, cpp_price, black_scholes_price
+from .pricing import dp_price, np_price, cpp_price, black_scholes_price
 from .volatility import crr_up_down
 from algorithm.arbitrage import put_call_parity
 
