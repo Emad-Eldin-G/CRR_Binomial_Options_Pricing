@@ -1,28 +1,63 @@
 import streamlit as st
+from algorithm.volatility import implied_volatility
 
 
 def stock_inputs():
     st.title("Stock Input Parameters")
 
-    S0 = st.number_input("Initial Stock Price (S₀)", min_value=1.0, value=100.0)
-
-    st.number_input(
-        "Volatility (%)",
-        key="volatity",
-        min_value=0.1,
-        max_value=200.0,
-        step=0.05,
-        format="%.2f",
-        help="0 ≤ σ ≤ 3."
+    S0 = st.number_input(
+        "Initial Stock Price (S₀)",
+        min_value=1.0,
+        value=100.0,
+        help="The price of the stock at the beginning of the option."
     )
+
+    cols = st.columns(2, gap="small")
+    with cols[0]:
+        st.button(
+            key="implied_volatility",
+            label="Implied Volatility",
+            width="stretch",
+            disabled=False,
+            )
+    with cols[1]:
+        st.button(
+            key="custom_volatility",
+            label="Custom Volatility",
+            width="stretch",
+            disabled=False,
+        )
 
     with st.expander("About Volatility"):
         st.markdown("""
         Volatility represents the degree of variation in asset prices over time.
-        It is typically measured as the standard deviation of returns.
+        The implied volatility is the volatility that is equivilent to the market price of the option.
         """)
 
-    return S0, st.session_state.volatity
+    if st.session_state.get("implied_volatility"):
+        st.number_input(
+            "Volatility (%)",
+            key="volatity",
+            min_value=0.1,
+            max_value=200.0,
+            step=0.05,
+            format="%.2f",
+            help="0 ≤ σ ≤ 3.",
+            disabled=True,
+        )
+    if st.session_state.get("custom_volatility"):
+        st.number_input(
+            "Volatility (%)",
+            key="volatity",
+            min_value=0.1,
+            max_value=200.0,
+            step=0.05,
+            format="%.2f",
+            help="0 ≤ σ ≤ 3.",
+            disabled=False,
+        )
+
+    return S0
 
 
 def option_inputs():
