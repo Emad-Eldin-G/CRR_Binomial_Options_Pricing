@@ -13,9 +13,9 @@ def black_scholes_price(S0, K, T, r, vol, opttype='C'):
     disc = np.exp(-r * T)
 
     if opttype.upper().startswith("C"):
-        return S0 * norm(d1) - K * disc * norm(d2)
+        return S0 * norm.cdf(d1) - K * disc * norm.cdf(d2)
     else:
-        return K * disc * norm(-d2) - S0 * norm(-d1)
+        return K * disc * norm.cdf(-d2) - S0 * norm.cdf(-d1)
 
 @lru_cache(maxsize=32)
 @calc_runtime
@@ -103,3 +103,11 @@ def np_price(S0, K, T, r, N, u, d, opttype='C', optclass="E"):
 def cpp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
     # Will use C++ Python bindings when available
     return np_price(S0, K, T, r, N, u, d, opttype, optclass)
+
+def get_call_price_from_put(put_price, S0, K, r, T):
+    """Calculate call price from put price using put-call parity."""
+    return put_price + S0 - K * np.exp(-r * T)
+
+def get_put_price_from_call(call_price, S0, K, r, T):
+    """Calculate put price from call price using put-call parity."""
+    return call_price + K * np.exp(-r * T) - S0
