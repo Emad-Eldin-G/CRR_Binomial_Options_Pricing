@@ -65,7 +65,7 @@ from components.input_components import (
     stock_inputs,
     option_inputs,
     market_inputs,
-    algorithm_inputs,
+    algorithm_inputs
 )
 from components.output_components import (
     price_output,
@@ -93,10 +93,10 @@ st.sidebar.markdown("""
 """)
 
 with st.sidebar:
-    S0 = stock_inputs()
-    exercise, option_type, K, T, N = option_inputs()
+    S0, vol = stock_inputs()
+    exercise, K = option_inputs()
     r = market_inputs()
-    method = algorithm_inputs()
+    T, N = algorithm_inputs()
 
     st.write("")
     if st.button("Compute Option Price", type="primary", use_container_width=True):
@@ -108,7 +108,7 @@ with st.sidebar:
         st.session_state.greeks = None
         st.session_state.binomial_tree = None
 
-        alogorithm_manager(S0, K, T, r, N, exercise, method=method)
+        alogorithm_manager(S0, K, T, r, N, vol, exercise)
 
 c1, c2 = st.columns([2, 1], gap="small")
 with c1:

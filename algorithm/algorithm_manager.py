@@ -1,30 +1,24 @@
 import streamlit as st
-from .pricing import dp_price, np_price, cpp_price, black_scholes_price
+from .pricing import np_price, get_call_price_from_put, get_put_price_from_call
 from .volatility import crr_up_down
 from algorithm.arbitrage import put_call_parity
 
-
-PRICERS = {
-    "Python DP": dp_price,
-    "NumPy Vectorization": np_price,
-    "C++": cpp_price,
-}
-
-
-def alogorithm_manager(S0, K, T, r, N, optclass, method=None):
-    method = method or st.session_state.get("method", "Python DP")
-    if isinstance(method, tuple):
-        method = method[0]
-    
-    vol = st.session_state.get("volatility", 0.2)  # Default volatility if not set
-
+def alogorithm_manager(S0, K, T, r, N, vol, optclass):
     dt = T / N
     u, d = crr_up_down(vol, dt)
-    pricer = PRICERS.get(method)
+    pricer = np_price
 
     if pricer:
-        call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
-        put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
+        if optclass == "E":
+            # Can use parity to price other side (saves computation time for European options)
+            call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
+            put = get_put_price_from_call(call, S0, K, r, T)
+        elif optclass == "A":
+            # Price call directly for American options
+            put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
+            call = pricer(S0, K, T, r, N, u, d, opttype='C', optclass=optclass)
+        else:
+            return st.warning("Invalid option type selected (must be 'C' or 'P').")
     else:
         call = None
         put = None
