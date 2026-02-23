@@ -90,7 +90,7 @@ st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈"
 st.write("")
 
 st.sidebar.markdown("""
-## Created by Emadeldin Osman
+## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)
 """)
 
 with st.sidebar:

@@ -137,7 +137,7 @@ def iv_greeks_output():
             f"""
             <div class="term-panel" style="height: 100%; margin-bottom: 20px;">
                 <div class="term-title">Implied Volatility</div>
-                <div class="term-row"><div class="term-k">IV</div><div class="term-v v-red">{iv_value}</div></div>
+                <div class="term-row"><div class="term-k">IV Value (Rounded to 4 decimals)</div><div class="term-v v-red">{iv_value}</div></div>
             </div>
             """,
             unsafe_allow_html=True,
