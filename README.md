@@ -1,6 +1,4 @@
 # Cox, Ross and Rubinstein Binomial Method for Options Pricing using Backward Induction
-> In progress...  
-
 > European and American Put/Call Option pricing.
 
 ## How to run project
