@@ -8,7 +8,6 @@ import streamlit as st
 from zoneinfo import ZoneInfo
 
 @st.fragment
-@st.cache_data(show_spinner=False)
 def fetch_option_data(_day_key=None):
     stock_data = collections.defaultdict(dict)
     

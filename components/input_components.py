@@ -9,12 +9,18 @@ def stock_inputs():
     if st.session_state.get('stock_data', None) is None:
         _date_key = day_key_london()
         fetch_option_data(_date_key)
-
-    stock_ticker = st.selectbox(
-        "Stock Ticker",
-        options=sorted(st.session_state.get('stock_data', None).keys()),
-        help="Select a stock ticker to pre-fill option parameters based on real market data.",
-    )
+        
+        stock_ticker = st.selectbox(
+            "Stock Ticker",
+            options=sorted(st.session_state.get('stock_data', None).keys()),
+            help="Select a stock ticker to pre-fill option parameters based on real market data.",
+        )
+    else:
+        stock_ticker = st.selectbox(
+            "Stock Ticker",
+            options=sorted(st.session_state.get('stock_data', None).keys()),
+            help="Select a stock ticker to pre-fill option parameters based on real market data.",
+        )
 
     S0 = st.number_input(
         "Initial Stock Price (S₀)",

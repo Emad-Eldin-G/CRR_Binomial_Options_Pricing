@@ -102,7 +102,7 @@ def arb_metrics_output():
 def greeks_output():
     greeks_dict = st.session_state.get("greeks", None)
 
-    html = '<div class="term-panel"><div class="term-title">Greeks</div><div class="tile-grid">'
+    html = '<div class="term-panel" style="height: 315px;"><div class="term-title">Greeks</div><div class="tile-grid">'
     for name, symbol in GREEKS:
         if greeks_dict is None:
             val = "—"
@@ -135,9 +135,9 @@ def iv_greeks_output():
     with col1:
         st.markdown(
             f"""
-            <div class="term-panel" style="height: 100%; margin-bottom: 20px;">
+            <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
                 <div class="term-title">Implied Volatility</div>
-                <div class="term-row"><div class="term-k">IV Value (Rounded to 4 decimals)</div><div class="term-v v-red">{iv_value}</div></div>
+                <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div>{iv_value}</div></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -146,35 +146,45 @@ def iv_greeks_output():
         greeks_output()
     with col2:
         try:
-            fig = go.Figure(
-                data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)]
-            )
+            if not iv_value or IVgrid is None:
+                st.markdown(
+                f"""
+                <div class="term-panel" style="height: 650px; margin-bottom: 20px;">
+                    <div class="term-title">Implied Volatility Surface</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+                )
+            else:
+                fig = go.Figure(
+                    data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)]
+                )
 
-            SIDE = 650
+                SIDE = 650
 
-            fig.update_layout(
-            title="Implied Volatility Surface",
-            width=SIDE,
-            height=SIDE,
-            margin=dict(l=0, r=0, t=40, b=0),
-            scene=dict(
-                xaxis_title="log-moneyness",
-                yaxis_title="T (years)",
-                zaxis_title="Implied Vol",
-                aspectmode="cube",   # makes the 3D box feel “square/cubic”
-            ),
-            )
+                fig.update_layout(
+                title="Implied Volatility Surface",
+                width=SIDE,
+                height=SIDE,
+                margin=dict(l=0, r=0, t=40, b=0),
+                scene=dict(
+                    xaxis_title="log-moneyness",
+                    yaxis_title="T (years)",
+                    zaxis_title="Implied Vol",
+                    aspectmode="cube",   # makes the 3D box feel “square/cubic”
+                ),
+                )
 
-            st.plotly_chart(
-                fig,
-                width="content",
-                config={
-                    "scrollZoom": False,
-                    "displayModeBar": False,
-                    "displaylogo": False,
-                    "responsive": False,
-                },
-            )
+                st.plotly_chart(
+                    fig,
+                    width="content",
+                    config={
+                        "scrollZoom": False,
+                        "displayModeBar": False,
+                        "displaylogo": False,
+                        "responsive": False,
+                    },
+                )
         except Exception as e:
             st.warning(f"Could not display IV surface: {e}")
             
