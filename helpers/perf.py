@@ -8,8 +8,6 @@ def calc_runtime(func):
         start_time = time()
         result = func(*args, **kwargs)
         end_time = time()
-        print(f"{func.__name__}({args, kwargs}) executed in ", end="")
-        print(f"{end_time - start_time:.6f} seconds")
         st.session_state["runtime"] = end_time - start_time
         return result
     return wrapper

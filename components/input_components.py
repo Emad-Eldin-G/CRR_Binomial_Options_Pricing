@@ -1,32 +1,28 @@
 import streamlit as st
-from algorithm.volatility import implied_volatility
+from data.stock_option_chain_data import fetch_option_data, get_stock_price
+from helpers.clock import day_key_london
 
-
+@st.fragment
 def stock_inputs():
     st.title("Stock Input Parameters")
+
+    if st.session_state.get('stock_data', None) is None:
+        _date_key = day_key_london()
+        fetch_option_data(_date_key)
+
+    stock_ticker = st.selectbox(
+        "Stock Ticker",
+        options=sorted(st.session_state.get('stock_data', None).keys()),
+        help="Select a stock ticker to pre-fill option parameters based on real market data.",
+    )
 
     S0 = st.number_input(
         "Initial Stock Price (S₀)",
         min_value=1.0,
-        value=100.0,
-        help="The price of the stock at the beginning of the option."
+        value=get_stock_price(stock_ticker),
+        help="The price of the stock at the beginning of the option.",
+        disabled=True,
     )
-
-    cols = st.columns(2, gap="small")
-    with cols[0]:
-        st.button(
-            key="implied_volatility",
-            label="Implied Volatility",
-            width="stretch",
-            disabled=False,
-            )
-    with cols[1]:
-        st.button(
-            key="custom_volatility",
-            label="Custom Volatility",
-            width="stretch",
-            disabled=False,
-        )
 
     with st.expander("About Volatility"):
         st.markdown("""
@@ -34,43 +30,46 @@ def stock_inputs():
         The implied volatility is the volatility that is equivilent to the market price of the option.
         """)
 
-    if st.session_state.get("implied_volatility"):
-        st.number_input(
-            "Volatility (%)",
-            key="volatity",
-            min_value=0.1,
-            max_value=200.0,
-            step=0.05,
-            format="%.2f",
-            help="0 ≤ σ ≤ 3.",
-            disabled=True,
-        )
-    if st.session_state.get("custom_volatility"):
-        st.number_input(
-            "Volatility (%)",
-            key="volatity",
-            min_value=0.1,
-            max_value=200.0,
-            step=0.05,
-            format="%.2f",
-            help="0 ≤ σ ≤ 3.",
-            disabled=False,
-        )
 
-    return S0
+    st.session_state['stock_ticker'] = stock_ticker
+    return stock_ticker, S0
 
 
+@st.fragment
 def option_inputs():
     st.title("Option Input Parameters")
 
     exercise = st.selectbox("Exercise Type", ["European", "American"])
-    option_type = st.selectbox("Option Type", ["Call", "Put"])
+
     K = st.number_input(
         "Strike Price (K)",
         min_value=1.0,
         value=100.0,
         help="The price at which the option can be exercised | K > 0"
     )
+
+    exercise_code = "E" if exercise == "European" else "A"
+
+    return exercise_code, K
+
+
+@st.fragment
+def market_inputs():
+    st.title("Market Input Parameters")
+    r = st.number_input(
+        "Risk-Free Rate (r)",
+        min_value=0.001,
+        max_value=0.50,
+        value=0.001,
+        step=0.01
+    )
+    return round(r, 10)
+
+
+@st.fragment
+def algorithm_inputs():
+    st.title("Algorithm Parameters")
+
     T = st.number_input(
         "Time to Maturity (T)",
         min_value=0.03,
@@ -87,44 +86,4 @@ def option_inputs():
         help="Higher values increase accuracy but also computation time."
     )
 
-    exercise_code = "E" if exercise == "European" else "A"
-    option_code = "C" if option_type == "Call" else "P"
-
-    return exercise_code, option_code, K, T, N
-
-
-def market_inputs():
-    st.title("Market Input Parameters")
-    r = st.number_input(
-        "Risk-Free Rate (r)",
-        min_value=0.001,
-        max_value=0.50,
-        value=0.001,
-        step=0.01
-    )
-    return round(r, 10)
-
-
-def algorithm_inputs():
-    st.title("Algorithm Parameters")
-
-    options = [
-        ("Python DP", 1),
-        ("NumPy Vectorization", 2),
-        ("C++", 3)
-    ]
-
-    method = st.selectbox(
-        "Computation Method",
-        options,
-        format_func=lambda x: x[0]
-    )
-
-    with st.expander("About Computation Methods"):
-        st.markdown("""
-        - **Python DP**: Basic dynamic programming approach  
-        - **NumPy Vectorization**: Uses array operations for speed  
-        - **C++**: High-performance compiled implementation  
-        """)
-
-    return method
+    return T, N

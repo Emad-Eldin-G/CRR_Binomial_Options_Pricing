@@ -70,7 +70,7 @@ from components.input_components import (
 from components.output_components import (
     price_output,
     arb_metrics_output,
-    iv_output,
+    iv_greeks_output,
     greeks_output,
     binomial_tree_output,
 )
@@ -83,6 +83,7 @@ st.session_state.setdefault("runtime", None)
 st.session_state.setdefault("arb_metrics", None)
 st.session_state.setdefault("greeks", None)
 st.session_state.setdefault("binomial_tree", None)
+st.session_state.setdefault("stock_data", None)
 
 st.write("")
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
@@ -93,7 +94,7 @@ st.sidebar.markdown("""
 """)
 
 with st.sidebar:
-    S0, vol = stock_inputs()
+    stock_ticker, S0 = stock_inputs()
     exercise, K = option_inputs()
     r = market_inputs()
     T, N = algorithm_inputs()
@@ -108,7 +109,16 @@ with st.sidebar:
         st.session_state.greeks = None
         st.session_state.binomial_tree = None
 
-        alogorithm_manager(S0, K, T, r, N, vol, exercise)
+
+        alogorithm_manager(
+            ticker=stock_ticker,
+            S0=S0,
+            K=K,
+            T=T,
+            r=r,
+            N=N,
+            optclass=exercise
+        )
 
 c1, c2 = st.columns([2, 1], gap="small")
 with c1:
@@ -117,9 +127,7 @@ with c1:
 with c2:
     arb_metrics_output()
 
-iv_output()
-st.write("")  
-greeks_output()
+iv_greeks_output()
 st.write("")  
 binomial_tree_output()
 st.write("")  

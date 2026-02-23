@@ -1,9 +1,27 @@
 import streamlit as st
+import numpy as np
 from .pricing import np_price, get_call_price_from_put, get_put_price_from_call
-from .volatility import crr_up_down
+from .volatility import crr_up_down, IVSurface
+from helpers.clock import day_key_london
 from algorithm.arbitrage import put_call_parity
 
-def alogorithm_manager(S0, K, T, r, N, vol, optclass):
+@st.fragment
+@st.cache_data()
+def iv_manager(ticker, _date_key=None):
+    iv_surface = IVSurface(
+        ticker
+    )
+    (XX, TT, IVgrid), rbf = iv_surface.main_iv_runner()
+    return (XX, TT, IVgrid), rbf
+
+def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
+    (XX, TT, IVgrid), rbf = iv_manager(ticker)
+    F = S0 * np.exp(r * T)  # Forward price
+    moneyness = np.log(K / F)
+    
+    vol = rbf(moneyness, T) if rbf else 0.2  # Fallback to 20% if RBF fails
+    vol = np.float64(vol)  # Ensure it's a scalar float
+
     dt = T / N
     u, d = crr_up_down(vol, dt)
     pricer = np_price
@@ -27,4 +45,7 @@ def alogorithm_manager(S0, K, T, r, N, vol, optclass):
 
     st.session_state["arb_metrics"] = {"pc_parity": pc_parity}
     st.session_state["option_price"] = [call, put]
+    st.session_state["iv_value"] = vol
+    st.session_state["iv_data"] = (XX, TT, IVgrid)
+    st.session_state["rbf"] = rbf
     return call, put

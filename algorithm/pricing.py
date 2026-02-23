@@ -70,9 +70,10 @@ def np_price(S0, K, T, r, N, u, d, opttype='C', optclass="E"):
     q = (np.exp(r * dt) - d) / (u - d)
     discount = np.exp(-r * dt)
 
-    # Initialize asset prices at maturity
+    # Initialize asset prices at maturity (use log-space to avoid overflow)
     j = np.arange(N + 1)
-    S = S0 * (u ** j) * (d ** (N - j))
+    log_S = np.log(S0) + j * np.log(u) + (N - j) * np.log(d)
+    S = np.exp(log_S)
 
     # Initialize option values at maturity
     if opttype == 'C':

@@ -1,4 +1,9 @@
 import streamlit as st
+from algorithm.volatility import IVSurface
+from scipy.interpolate import UnivariateSpline, Rbf
+import plotly.graph_objects as go
+import numpy as np
+import pandas as pd
 
 GREEKS = [
     ("Delta", "Δ"),
@@ -119,18 +124,60 @@ def greeks_output():
 
 
 @st.fragment
-def iv_output():
-    iv_data = st.session_state.get("iv_data", None)
+def iv_greeks_output():
+    iv_value = st.session_state.get("iv_value", None)
+    iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
+    iv_value = str(iv_value) if iv_value is not None else "—"
 
-    st.markdown(
-        """
-        <div class="term-panel">
-            <div class="term-title">Implied Volatility (σ)</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(
+            f"""
+            <div class="term-panel" style="height: 100%; margin-bottom: 20px;">
+                <div class="term-title">Implied Volatility</div>
+                <div class="term-row"><div class="term-k">IV</div><div class="term-v v-red">{iv_value}</div></div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        greeks_output()
+    with col2:
+        try:
+            fig = go.Figure(
+                data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)]
+            )
+
+            SIDE = 650
+
+            fig.update_layout(
+            title="Implied Volatility Surface",
+            width=SIDE,
+            height=SIDE,
+            margin=dict(l=0, r=0, t=40, b=0),
+            scene=dict(
+                xaxis_title="log-moneyness",
+                yaxis_title="T (years)",
+                zaxis_title="Implied Vol",
+                aspectmode="cube",   # makes the 3D box feel “square/cubic”
+            ),
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True,
+                config={
+                    "scrollZoom": False,
+                    "displayModeBar": False,
+                    "displaylogo": False,
+                    "responsive": False,
+                },
+            )
+        except Exception as e:
+            st.warning(f"Could not display IV surface: {e}")
+            
 @st.fragment
 def binomial_tree_output():
     tree_data = st.session_state.get("binomial_tree", None)
