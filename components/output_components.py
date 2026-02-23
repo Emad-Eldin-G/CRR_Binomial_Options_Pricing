@@ -167,7 +167,7 @@ def iv_greeks_output():
 
             st.plotly_chart(
                 fig,
-                use_container_width=True,
+                width="content",
                 config={
                     "scrollZoom": False,
                     "displayModeBar": False,

@@ -100,7 +100,7 @@ with st.sidebar:
     T, N = algorithm_inputs()
 
     st.write("")
-    if st.button("Compute Option Price", type="primary", use_container_width=True):
+    if st.button("Compute Option Price", type="primary", width='content'):
         st.session_state.price_compute_on = True
 
         # Reset previous results for new computation
