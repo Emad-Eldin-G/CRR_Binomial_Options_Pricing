@@ -229,7 +229,7 @@ class IVSurface:
         Tg = np.linspace(T_min, T_max, nT)
         XX, TT = np.meshgrid(xg, Tg)
 
-        rbf = self.rbf if self.rbf else self.build_rbf(self, df_s)
+        rbf = self.rbf if self.rbf else self.build_rbf(df_s)
         IVgrid = rbf(XX, TT)
 
         return XX, TT, IVgrid
@@ -244,7 +244,7 @@ class IVSurface:
             df_s["T"].to_numpy(),
             df_s["iv_smooth"].to_numpy(),
             function="multiquadric",
-            smooth=rbf_smooth,  # bigger => smoother
+            smooth=rbf_smooth,
         )
 
         self.rbf = rbf
