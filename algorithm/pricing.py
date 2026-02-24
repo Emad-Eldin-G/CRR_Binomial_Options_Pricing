@@ -29,9 +29,9 @@ def dp_price(S0, K, T, r, N, u, d, opttype='C', optclass="E"):
     S[0] = S0 * (d ** N)  # [S0, 0, .. N]
 
     # Build the asset price tree
-    for up_move in range(1, N+1):
+    for down_move in range(1, N+1):
         # Going up the tree
-        S[up_move] = S[up_move - 1] * (u / d)
+        S[down_move] = S[down_move - 1] * (u / d)
 
     # Initialize option values at maturity
     option_values = np.zeros(N + 1)  # [0, 0, .. N]
