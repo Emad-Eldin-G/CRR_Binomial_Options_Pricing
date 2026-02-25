@@ -8,7 +8,7 @@ def stock_inputs():
 
     if st.session_state.get("stock_data", None) is None:
         _date_key = day_key_london()
-        fetch_option_data(_date_key)
+        fetch_option_data()
 
         stock_ticker = st.selectbox(
             "Stock Ticker",
