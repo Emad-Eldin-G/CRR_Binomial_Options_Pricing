@@ -127,7 +127,8 @@ def greeks_output():
 def iv_greeks_output():
     iv_value = st.session_state.get("iv_value", None)
     iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
-    iv_value = str(iv_value) if iv_value is not None else "—"
+    iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
+    iv_value = str(iv_value) + "%" if iv_value != "—" else iv_value
 
     XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
@@ -137,7 +138,7 @@ def iv_greeks_output():
             f"""
             <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
                 <div class="term-title">Implied Volatility</div>
-                <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div>{iv_value}</div></div>
+                <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div class="term-v v-blue">{iv_value}</div></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -171,7 +172,7 @@ def iv_greeks_output():
                     xaxis_title="log-moneyness",
                     yaxis_title="T (years)",
                     zaxis_title="Implied Vol",
-                    aspectmode="cube",   # makes the 3D box feel “square/cubic”,
+                    aspectmode="cube",
                     xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
                     yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
                     zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),

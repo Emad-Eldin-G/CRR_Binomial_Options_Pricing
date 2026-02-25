@@ -2,7 +2,6 @@ import streamlit as st
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
 from helpers.clock import day_key_london
 
-@st.fragment
 def stock_inputs():
     st.title("Stock Input Parameters")
 
@@ -25,7 +24,7 @@ def stock_inputs():
     S0 = st.number_input(
         "Initial Stock Price (S₀)",
         min_value=1.0,
-        value=get_stock_price(stock_ticker),
+        value=get_stock_price(ticker=stock_ticker),
         help="The price of the stock at the beginning of the option.",
         disabled=True,
     )
@@ -41,7 +40,6 @@ def stock_inputs():
     return stock_ticker, S0
 
 
-@st.fragment
 def option_inputs():
     st.title("Option Input Parameters")
 
@@ -50,7 +48,7 @@ def option_inputs():
     K = st.number_input(
         "Strike Price (K)",
         min_value=1.0,
-        value=100.0,
+        value=get_stock_price(ticker=st.session_state.get('stock_ticker', None)),
         help="The price at which the option can be exercised | K > 0"
     )
 
