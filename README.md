@@ -76,7 +76,3 @@ In the binomial tree:
 ## Implied Volatility (**σ'**)
 This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces.  
 Meaning the σ' value is not theoretical, but rather represents market activity, making the project realistic.
-
-<img 
-      src="https://raw.githubusercontent.com/omda-binomial-options-pricing/CRR_Binomial_Options_Pricing/data/iv_surface_plot_2.png"
-/>
