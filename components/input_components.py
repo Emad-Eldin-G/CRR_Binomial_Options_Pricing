@@ -26,7 +26,7 @@ def stock_inputs():
         "Initial Stock Price (S₀)",
         min_value=1.0,
         value=get_stock_price(ticker=stock_ticker),
-        help="The price of the stock at the beginning of the option.",
+        help="Current stock price in the market",
         disabled=True,
     )
 
@@ -82,7 +82,7 @@ def algorithm_inputs():
         "Number of Steps (N)",
         min_value=1,
         max_value=5000,
-        value=50,
+        value=1000,
         help="Higher values increase accuracy but also computation time.",
     )
 
