@@ -171,8 +171,13 @@ def iv_greeks_output():
                     xaxis_title="log-moneyness",
                     yaxis_title="T (years)",
                     zaxis_title="Implied Vol",
-                    aspectmode="cube",   # makes the 3D box feel “square/cubic”
+                    aspectmode="cube",   # makes the 3D box feel “square/cubic”,
+                    xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    bgcolor="rgba(0,0,0,0)"
                 ),
+                
                 )
 
                 st.plotly_chart(
@@ -183,6 +188,7 @@ def iv_greeks_output():
                         "displayModeBar": True,
                         "displaylogo": False,
                         "responsive": False,
+                        
                     },
                 )
 

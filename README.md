@@ -66,16 +66,21 @@ Both are priced using the same binomial formulas; only the payoff function chang
 
 ## European vs American Options
 
-| Feature     | European              | American                       |
-| ----------- | --------------------- | ------------------------------ |
-| Exercisable | Only at maturity      | Anytime up to maturity         |
-| Pricing     | Closed-form CRR works | Must check for early exercise  |
-| Complexity  | Easier                | More computationally intensive |
-| Example     | Index options         | Most equity options            |
-
 In the binomial tree:
 
 * **European:** only use discounted expected value at each node.
 * **American:** at each node compare:
   continuation value **vs** immediate exercise payoff,
   and take the **maximum**.
+
+## Implied Volatility (**σ'**)
+This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces.  
+Meaning the σ' value is not theoretical, but rather represents market activity, making the project realistic.  
+
+<iframe
+  src="https://raw.githubusercontent.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/main/data/iv_surface_plot.html"
+  width="100%"
+  height="600"
+>
+      
+</iframe>
