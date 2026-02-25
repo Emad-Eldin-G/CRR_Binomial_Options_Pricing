@@ -16,29 +16,15 @@ GREEKS = [
 
 @st.fragment
 def price_output():
-    compute_on = st.session_state.get("price_compute_on", False)
     price_data = st.session_state.get("option_price", None)
 
-    if not compute_on:
+    if not price_data:
         st.markdown(
             """
             <div class="term-panel">
                 <div class="term-title">Option Price</div>
                 <div class="term-row"><div class="term-k">Call</div><div class="term-v term-muted">—</div></div>
                 <div class="term-row"><div class="term-k">Put</div><div class="term-v term-muted">—</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    if price_data is None:
-        st.markdown(
-            """
-            <div class="term-panel">
-                <div class="term-title">Option Price</div>
-                <div class="term-row"><div class="term-k">Call</div><div class="term-v term-muted">Computing…</div></div>
-                <div class="term-row"><div class="term-k">Put</div><div class="term-v term-muted">Computing…</div></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -60,27 +46,14 @@ def price_output():
 
 @st.fragment
 def arb_metrics_output():
-    compute_on = st.session_state.get("price_compute_on", False)
     arb_data = st.session_state.get("arb_metrics", None)
 
-    if not compute_on:
+    if not arb_data:
         st.markdown(
             """
             <div class="term-panel">
                 <div class="term-title">Arbitrage Metrics</div>
                 <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v term-muted">—</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    if arb_data is None:
-        st.markdown(
-            """
-            <div class="term-panel">
-                <div class="term-title">Arbitrage Metrics</div>
-                <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v term-muted">Computing…</div></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -127,23 +100,35 @@ def greeks_output():
 def iv_greeks_output():
     iv_compute_running = st.session_state.get("iv_compute_on", False)
     iv_value = st.session_state.get("iv_value", None)
-    iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
-    iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
-    iv_value = str(iv_value) + "%" if iv_value != "—" else iv_value
-
     XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown(
-            f"""
-            <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
-                <div class="term-title">Implied Volatility</div>
-                <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div class="term-v v-blue">{iv_value}</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        if not iv_value:
+            st.markdown(
+                f"""
+                <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
+                    <div class="term-title">Implied Volatility</div>
+                    <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v term-muted">—</div></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        else:
+            
+            iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
+            iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
+            iv_value = str(iv_value) + "%" if iv_value != "—" else iv_value
+
+            st.markdown(
+                f"""
+                <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
+                    <div class="term-title">Implied Volatility</div>
+                    <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div class="term-v v-blue">{iv_value}</div></div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
         greeks_output()
     with col2:
@@ -153,6 +138,7 @@ def iv_greeks_output():
                     f"""
                 <div class="term-panel" style="height: 650px; margin-bottom: 20px;">
                     <div class="term-title">Implied Volatility Surface</div>
+                    <div class="term-row"><div class="term-v term-muted">—</div></div>
                 </div>
                 """,
                     unsafe_allow_html=True,
