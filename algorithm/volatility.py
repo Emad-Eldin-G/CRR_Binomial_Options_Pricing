@@ -97,7 +97,9 @@ class IVSurface:
         calls_df = self._filter_chain(
             self.stock_option_chain_data[exp_str].get("calls")
         )
-        puts_df = self._filter_chain(self.stock_option_chain_data[exp_str].get("puts"))
+        puts_df = self._filter_chain(
+            self.stock_option_chain_data[exp_str].get("puts")
+        )
 
         if (
             calls_df is None
@@ -105,7 +107,7 @@ class IVSurface:
             or len(calls_df) == 0
             or len(puts_df) == 0
         ):
-            return
+            raise ValueError
 
         T = (exp_date - now).total_seconds() / (60 * 60 * 24 * 365.25)
         T = float(np.round(T, 6))

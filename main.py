@@ -109,9 +109,13 @@ with st.sidebar:
         st.session_state.greeks = None
         st.session_state.binomial_tree = None
 
-        alogorithm_manager(
-            ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
-        )
+        try:
+            alogorithm_manager(
+                ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
+            )
+        except ValueError:
+            with st.sidebar:
+                st.warning("No sufficient option chain data")
 
 c1, c2 = st.columns([2, 1], gap="small")
 with c1:
