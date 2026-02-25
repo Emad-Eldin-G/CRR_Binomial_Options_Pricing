@@ -7,8 +7,8 @@ from functools import lru_cache
 import streamlit as st
 from zoneinfo import ZoneInfo
 
-
-def fetch_option_data(_day_key=None):
+@st.cache_data(ttl="1d", show_spinner=False, persist=True)
+def fetch_option_data():
     stock_data = collections.defaultdict(dict)
 
     sp_tickers = pd.read_csv("./data/sp500_companies.csv", sep=",")
