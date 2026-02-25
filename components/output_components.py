@@ -179,12 +179,13 @@ def iv_greeks_output():
                     fig,
                     width="content",
                     config={
-                        "scrollZoom": False,
-                        "displayModeBar": False,
+                        "scrollZoom": True,
+                        "displayModeBar": True,
                         "displaylogo": False,
                         "responsive": False,
                     },
                 )
+
         except Exception as e:
             st.warning(f"Could not display IV surface: {e}")
             
