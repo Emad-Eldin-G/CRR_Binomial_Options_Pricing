@@ -74,5 +74,4 @@ In the binomial tree:
   and take the **maximum**.
 
 ## Implied Volatility (**σ'**)
-This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces.  
-Meaning the σ' value is not theoretical, but rather represents market activity, making the project realistic.
+This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces. Meaning the σ' value is not theoretical, but rather represents market activity, making the project realistic.
