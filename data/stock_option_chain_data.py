@@ -7,7 +7,6 @@ from functools import lru_cache
 import streamlit as st
 from zoneinfo import ZoneInfo
 
-@st.fragment
 def fetch_option_data(_day_key=None):
     stock_data = collections.defaultdict(dict)
     
@@ -34,14 +33,9 @@ def fetch_option_data(_day_key=None):
     st.session_state['stock_data'] = stock_data
     return stock_data
 
-@st.fragment
 def get_stock_price(ticker):
-    stock_data = st.session_state.get('stock_data', {})
-    if ticker in stock_data:
-        exp_dates = list(stock_data[ticker].keys())
-        if exp_dates:
-            first_exp = exp_dates[0]
-            calls = stock_data[ticker][first_exp]['calls']
-            if not calls.empty:
-                return calls['lastPrice'].iloc[0]
+    t = yf.Ticker(ticker)
+    hist = t.history(period="1d")
+    if not hist.empty:
+        return float(hist["Close"].iloc[-1])
     return None
