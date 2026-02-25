@@ -65,7 +65,7 @@ from components.input_components import (
     stock_inputs,
     option_inputs,
     market_inputs,
-    algorithm_inputs
+    algorithm_inputs,
 )
 from components.output_components import (
     price_output,
@@ -100,7 +100,7 @@ with st.sidebar:
     T, N = algorithm_inputs()
 
     st.write("")
-    if st.button("Compute Option Price", type="primary", width='content'):
+    if st.button("Compute Option Price", type="primary", width="content"):
         st.session_state.price_compute_on = True
 
         # Reset previous results for new computation
@@ -109,25 +109,16 @@ with st.sidebar:
         st.session_state.greeks = None
         st.session_state.binomial_tree = None
 
-
         alogorithm_manager(
-            ticker=stock_ticker,
-            S0=S0,
-            K=K,
-            T=T,
-            r=r,
-            N=N,
-            optclass=exercise
+            ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
         )
 
 c1, c2 = st.columns([2, 1], gap="small")
 with c1:
     price_output()
-    st.write("")  
+    st.write("")
 with c2:
     arb_metrics_output()
 
 iv_greeks_output()
-st.write("")  
-binomial_tree_output()
-st.write("")  
+st.write("")

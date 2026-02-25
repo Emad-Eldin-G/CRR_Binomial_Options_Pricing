@@ -2,22 +2,23 @@ import streamlit as st
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
 from helpers.clock import day_key_london
 
+
 def stock_inputs():
     st.title("Stock Input Parameters")
 
-    if st.session_state.get('stock_data', None) is None:
+    if st.session_state.get("stock_data", None) is None:
         _date_key = day_key_london()
         fetch_option_data(_date_key)
-        
+
         stock_ticker = st.selectbox(
             "Stock Ticker",
-            options=sorted(st.session_state.get('stock_data', None).keys()),
+            options=sorted(st.session_state.get("stock_data", None).keys()),
             help="Select a stock ticker to pre-fill option parameters based on real market data.",
         )
     else:
         stock_ticker = st.selectbox(
             "Stock Ticker",
-            options=sorted(st.session_state.get('stock_data', None).keys()),
+            options=sorted(st.session_state.get("stock_data", None).keys()),
             help="Select a stock ticker to pre-fill option parameters based on real market data.",
         )
 
@@ -35,8 +36,7 @@ def stock_inputs():
         The implied volatility is the volatility that is equivilent to the market price of the option.
         """)
 
-
-    st.session_state['stock_ticker'] = stock_ticker
+    st.session_state["stock_ticker"] = stock_ticker
     return stock_ticker, S0
 
 
@@ -48,8 +48,8 @@ def option_inputs():
     K = st.number_input(
         "Strike Price (K)",
         min_value=1.0,
-        value=get_stock_price(ticker=st.session_state.get('stock_ticker', None)),
-        help="The price at which the option can be exercised | K > 0"
+        value=get_stock_price(ticker=st.session_state.get("stock_ticker", None)),
+        help="The price at which the option can be exercised | K > 0",
     )
 
     exercise_code = "E" if exercise == "European" else "A"
@@ -61,11 +61,7 @@ def option_inputs():
 def market_inputs():
     st.title("Market Input Parameters")
     r = st.number_input(
-        "Risk-Free Rate (r)",
-        min_value=0.001,
-        max_value=0.50,
-        value=0.001,
-        step=0.01
+        "Risk-Free Rate (r)", min_value=0.001, max_value=0.50, value=0.001, step=0.01
     )
     return round(r, 10)
 
@@ -80,14 +76,14 @@ def algorithm_inputs():
         max_value=50.00,
         value=1.00,
         step=0.01,
-        help="Time in years until option expiration | T > 0"
+        help="Time in years until option expiration | T > 0",
     )
     N = st.number_input(
         "Number of Steps (N)",
         min_value=1,
         max_value=5000,
         value=50,
-        help="Higher values increase accuracy but also computation time."
+        help="Higher values increase accuracy but also computation time.",
     )
 
     return T, N

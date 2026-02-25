@@ -9,6 +9,7 @@ import streamlit as st
 from scipy.interpolate import UnivariateSpline, Rbf
 import plotly.graph_objects as go
 
+
 def crr_up_down(vol, dt):
     """
     Cox–Ross–Rubinstein up and down factors
@@ -34,19 +35,17 @@ class IVSurface:
         self.rbf = None
 
         # Extract data for the specific ticker: stock_data[ticker] = {exp_str: {calls/puts: df}}
-        stock_data = st.session_state.get('stock_data', {})
+        stock_data = st.session_state.get("stock_data", {})
         self.stock_option_chain_data = stock_data.get(ticker, {})
 
-
-    @lru_cache(maxsize=1)
     def main_iv_runner(self, today=datetime.now(timezone.utc).today().day):
         x, y, z = self.build_iv_points()
         df_s = self.smooth_smiles(x, y, z)
-        rbf = self.build_rbf(df_s) if not self.rbf else self.rbf
+        self.build_rbf(df_s) if not self.rbf else self.rbf
 
         XX, TT, IVgrid = self.get_grid_data(df_s)
-        return (XX, TT, IVgrid), rbf
-    
+        return (XX, TT, IVgrid), self.rbf
+
     def iv_brentq_binomial(self, option_price, S0, K, r, T, opttype):
         N = self.N
         dt = T / N
@@ -74,7 +73,7 @@ class IVSurface:
             return float(brentq(objective, lo, hi, xtol=1e-6, maxiter=200))
         except Exception:
             return None
-            
+
     def _filter_chain(self, df):
         """Liquidity + sanity filters; returns copy with mid/spread_pct"""
         if df is None or len(df) == 0:
@@ -82,8 +81,6 @@ class IVSurface:
 
         d = df.copy()
 
-        # basic guards
-        d = d[(d["bid"] > 0) & (d["ask"] > 0)]
         d["mid"] = (d["bid"] + d["ask"]) / 2
         d = d[d["mid"] > 0.01]
 
@@ -92,21 +89,28 @@ class IVSurface:
 
         d["spread"] = d["ask"] - d["bid"]
         d["spread_pct"] = d["spread"] / d["mid"]
-        d = d[d["spread_pct"] <= 0.30]   # 30% max spread
+        d = d[d["spread_pct"] <= 0.30]  # 30% max spread
 
         return d
-    
-    def build_iv_points_otm_for_expiry(self, exp_str, exp_date, now):
-        calls_df = self._filter_chain(self.stock_option_chain_data[exp_str].get("calls"))
-        puts_df  = self._filter_chain(self.stock_option_chain_data[exp_str].get("puts"))
 
-        if calls_df is None or puts_df is None or len(calls_df) == 0 or len(puts_df) == 0:
+    def build_iv_points_otm_for_expiry(self, exp_str, exp_date, now):
+        calls_df = self._filter_chain(
+            self.stock_option_chain_data[exp_str].get("calls")
+        )
+        puts_df = self._filter_chain(self.stock_option_chain_data[exp_str].get("puts"))
+
+        if (
+            calls_df is None
+            or puts_df is None
+            or len(calls_df) == 0
+            or len(puts_df) == 0
+        ):
             return
 
         T = (exp_date - now).total_seconds() / (60 * 60 * 24 * 365.25)
         T = float(np.round(T, 6))
 
-        if T < 14/365:
+        if T < 14 / 365:
             return
 
         # ---- OTM CALLS (K > spot) ----
@@ -120,17 +124,12 @@ class IVSurface:
                 continue  # skip very deep ITM/OTM calls
 
             iv = self.iv_brentq_binomial(
-                option_price=mid_price,
-                S0=self.spot,
-                K=K,
-                r=self.r,
-                T=T,
-                opttype="C"
+                option_price=mid_price, S0=self.spot, K=K, r=self.r, T=T, opttype="C"
             )
             if iv is None or not (0.03 <= iv <= 0.95):
                 continue
 
-            self.iv_data_x.append(moneyness)   # or K/self.spot if you prefer moneyness
+            self.iv_data_x.append(moneyness)  # or K/self.spot if you prefer moneyness
             self.iv_data_y.append(T)
             self.iv_data_iv.append(iv)
 
@@ -145,17 +144,12 @@ class IVSurface:
                 continue  # skip very deep ITM/OTM puts
 
             iv = self.iv_brentq_binomial(
-                option_price=mid_price,
-                S0=self.spot,
-                K=K,
-                r=self.r,
-                T=T,
-                opttype="P"
+                option_price=mid_price, S0=self.spot, K=K, r=self.r, T=T, opttype="P"
             )
             if iv is None or not (0.03 <= iv <= 0.95):
                 continue
 
-            self.iv_data_x.append(moneyness)   # or K/self.spot
+            self.iv_data_x.append(moneyness)  # or K/self.spot
             self.iv_data_y.append(T)
             self.iv_data_iv.append(iv)
 
@@ -165,18 +159,27 @@ class IVSurface:
 
         if self.spot is None:
             import yfinance as yf
-            self.spot = float(yf.Ticker(self.ticker).history(period="1d")["Close"].iloc[-1])
+
+            self.spot = float(
+                yf.Ticker(self.ticker).history(period="1d")["Close"].iloc[-1]
+            )
 
         now = datetime.now(timezone.utc)
 
         for exp_str in self.stock_option_chain_data.keys():
-            exp_date = datetime.strptime(exp_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            exp_date = datetime.strptime(exp_str, "%Y-%m-%d").replace(
+                tzinfo=timezone.utc
+            )
             if exp_date <= now:
                 continue
             self.build_iv_points_otm_for_expiry(exp_str, exp_date, now)
 
-        return np.array(self.iv_data_x), np.array(self.iv_data_y), np.array(self.iv_data_iv)
-    
+        return (
+            np.array(self.iv_data_x),
+            np.array(self.iv_data_y),
+            np.array(self.iv_data_iv),
+        )
+
     def smooth_smiles(self, x, T, iv, s_scale=0.002, mad_z=4.0, min_pts=6):
         """
         x: log-moneyness array
@@ -230,10 +233,10 @@ class IVSurface:
         XX, TT = np.meshgrid(xg, Tg)
 
         rbf = self.rbf if self.rbf else self.build_rbf(df_s)
-        IVgrid = rbf(XX, TT)
+        IVgrid = self.rbf(XX, TT)
 
         return XX, TT, IVgrid
-    
+
     def build_rbf(self, df_s, rbf_smooth=0.002):
         """
         df_s must contain columns x, T, iv_smooth
@@ -248,4 +251,3 @@ class IVSurface:
         )
 
         self.rbf = rbf
-        return rbf

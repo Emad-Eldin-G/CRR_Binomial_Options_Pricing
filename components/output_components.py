@@ -116,7 +116,7 @@ def greeks_output():
             f'<div class="term-tile">'
             f'  <div class="tile-label">{name} ({symbol})</div>'
             f'  <div class="tile-value">{val}</div>'
-            f'</div>'
+            f"</div>"
         )
 
     html += "</div></div>"
@@ -125,6 +125,7 @@ def greeks_output():
 
 @st.fragment
 def iv_greeks_output():
+    iv_compute_running = st.session_state.get("iv_compute_on", False)
     iv_value = st.session_state.get("iv_value", None)
     iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
     iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
@@ -149,36 +150,34 @@ def iv_greeks_output():
         try:
             if not iv_value or IVgrid is None:
                 st.markdown(
-                f"""
+                    f"""
                 <div class="term-panel" style="height: 650px; margin-bottom: 20px;">
                     <div class="term-title">Implied Volatility Surface</div>
                 </div>
                 """,
-                unsafe_allow_html=True,
+                    unsafe_allow_html=True,
                 )
+
             else:
-                fig = go.Figure(
-                    data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)]
-                )
+                fig = go.Figure(data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)])
 
                 SIDE = 650
 
                 fig.update_layout(
-                title="Implied Volatility Surface",
-                width=SIDE,
-                height=SIDE,
-                margin=dict(l=0, r=0, t=40, b=0),
-                scene=dict(
-                    xaxis_title="log-moneyness",
-                    yaxis_title="T (years)",
-                    zaxis_title="Implied Vol",
-                    aspectmode="cube",
-                    xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                    yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                    zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                    bgcolor="rgba(0,0,0,0)"
-                ),
-                
+                    title="Implied Volatility Surface",
+                    width=SIDE,
+                    height=SIDE,
+                    margin=dict(l=0, r=0, t=40, b=0),
+                    scene=dict(
+                        xaxis_title="log-moneyness",
+                        yaxis_title="T (years)",
+                        zaxis_title="Implied Vol",
+                        aspectmode="cube",
+                        xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                        yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                        zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                        bgcolor="rgba(0,0,0,0)",
+                    ),
                 )
 
                 st.plotly_chart(
@@ -189,13 +188,13 @@ def iv_greeks_output():
                         "displayModeBar": True,
                         "displaylogo": False,
                         "responsive": False,
-                        
                     },
                 )
 
         except Exception as e:
             st.warning(f"Could not display IV surface: {e}")
-            
+
+
 @st.fragment
 def binomial_tree_output():
     tree_data = st.session_state.get("binomial_tree", None)
