@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 st.set_page_config(
     page_title="Binomial Option Pricing",
     layout="wide",
@@ -75,6 +76,7 @@ from components.output_components import (
     binomial_tree_output,
 )
 from algorithm.algorithm_manager import alogorithm_manager
+from data.stock_option_chain_data import fetch_option_data
 
 # session defaults
 st.session_state.setdefault("option_price", None)
@@ -83,7 +85,8 @@ st.session_state.setdefault("runtime", None)
 st.session_state.setdefault("arb_metrics", None)
 st.session_state.setdefault("greeks", None)
 st.session_state.setdefault("binomial_tree", None)
-st.session_state.setdefault("stock_data", None)
+
+fetch_option_data()
 
 st.write("")
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")

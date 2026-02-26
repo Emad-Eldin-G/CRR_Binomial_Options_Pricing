@@ -1,26 +1,17 @@
 import streamlit as st
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
-from helpers.clock import day_key_london
 
 
 def stock_inputs():
     st.title("Stock Input Parameters")
 
-    if st.session_state.get("stock_data", None) is None:
-        _date_key = day_key_london()
-        fetch_option_data()
+    stocks = fetch_option_data()
 
-        stock_ticker = st.selectbox(
-            "Stock Ticker",
-            options=sorted(st.session_state.get("stock_data", None).keys()),
-            help="Select a stock ticker to pre-fill option parameters based on real market data.",
-        )
-    else:
-        stock_ticker = st.selectbox(
-            "Stock Ticker",
-            options=sorted(st.session_state.get("stock_data", None).keys()),
-            help="Select a stock ticker to pre-fill option parameters based on real market data.",
-        )
+    stock_ticker = st.selectbox(
+        "Stock Ticker",
+        options=stocks.keys(),
+        help="Select a stock ticker to pre-fill option parameters based on real market data.",
+    )
 
     S0 = st.number_input(
         "Initial Stock Price (S₀)",
