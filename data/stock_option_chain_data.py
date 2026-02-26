@@ -7,6 +7,7 @@ from functools import lru_cache
 import streamlit as st
 from zoneinfo import ZoneInfo
 
+
 @st.cache_data(ttl="1d", show_spinner="Fetching Option Chain Data...")
 def fetch_option_data():
     stock_data = collections.defaultdict(dict)
@@ -29,11 +30,12 @@ def fetch_option_data():
 
                 stock_data[ticker][exp] = {"calls": calls, "puts": puts}
         except Exception as e:
-            del stock_data[ticker] # don't include tickers that don't get data
+            del stock_data[ticker]  # don't include tickers that don't get data
             print(f"Error fetching data for {ticker}: {e}")
 
     st.session_state["stock_data"] = stock_data
     return stock_data
+
 
 @st.cache_resource(show_spinner=False)
 @st.spinner("Getting Stock Price")

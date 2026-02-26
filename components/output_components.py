@@ -115,7 +115,6 @@ def iv_greeks_output():
                 unsafe_allow_html=True,
             )
         else:
-            
             iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
             iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
             iv_value = str(iv_value) + "%" if iv_value != "—" else iv_value

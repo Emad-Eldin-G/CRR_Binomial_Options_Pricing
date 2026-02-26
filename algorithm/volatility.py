@@ -41,38 +41,112 @@ class IVSurface:
     def main_iv_runner(self, today=datetime.now(timezone.utc).today().day):
         x, y, z = self.build_iv_points()
         df_s = self.smooth_smiles(x, y, z)
-        self.build_rbf(df_s) if not self.rbf else self.rbf
+        self.rbf = self.build_rbf(df_s)
 
         XX, TT, IVgrid = self.get_grid_data(df_s)
         return (XX, TT, IVgrid), self.rbf
 
-    def iv_brentq_binomial(self, option_price, S0, K, r, T, opttype):
+    def iv_newton_fd_binomial(
+        self,
+        option_price,
+        S0,
+        K,
+        r,
+        T,
+        opttype,
+        optclass="E",
+        lo=0.01,
+        hi=3.0,
+        tol=1e-6,
+        maxiter=30,
+    ):
         N = self.N
         dt = T / N
 
-        def objective(vol):
+        def price(vol):
             u, d = crr_up_down(vol, dt)
-            # if your binomial pricer supports q, use r - q in p / discounting
-            model_price = np_price(S0, K, T, r, N, u, d, opttype)
-            return model_price - option_price
+            return np_price(S0, K, T, r, N, u, d, opttype=opttype, optclass=optclass)
 
-        lo, hi = 0.01, 3.0
+        def f(vol):
+            return price(vol) - option_price
+
+        # bracket root
         try:
-            f_lo = objective(lo)
-            f_hi = objective(hi)
+            f_lo = f(lo)
+            f_hi = f(hi)
 
-            # try expanding the upper bound if we didn't bracket a root
             if np.sign(f_lo) == np.sign(f_hi):
-                for hi in (5.0, 8.0, 12.0):
-                    f_hi = objective(hi)
-                    if np.sign(f_lo) != np.sign(f_hi):
+                for hi2 in (5.0, 8.0, 12.0):
+                    f_hi2 = f(hi2)
+                    if np.sign(f_lo) != np.sign(f_hi2):
+                        hi, f_hi = hi2, f_hi2
                         break
                 else:
                     return None  # never bracketed
-
-            return float(brentq(objective, lo, hi, xtol=1e-6, maxiter=200))
         except Exception:
             return None
+
+        # initial guess: midpoint
+        vol = 0.5 * (lo + hi)
+
+        for _ in range(maxiter):
+            try:
+                fv = f(vol)
+            except Exception:
+                # fallback to bisection if pricing failed
+                vol = 0.5 * (lo + hi)
+                continue
+
+            if abs(fv) <= tol:
+                return float(vol)
+
+            # finite-difference vega (central difference)
+            eps = max(1e-4, 1e-2 * vol)  # scale bump a bit with vol
+            v1 = max(lo, vol - eps)
+            v2 = min(hi, vol + eps)
+
+            # if bump collapses, bisect
+            if v2 <= v1:
+                vol = 0.5 * (lo + hi)
+                continue
+
+            try:
+                f1 = f(v1)
+                f2 = f(v2)
+                vega = (f2 - f1) / (v2 - v1)
+            except Exception:
+                vol = 0.5 * (lo + hi)
+                continue
+
+            # if vega too small or bad, bisect
+            if not np.isfinite(vega) or abs(vega) < 1e-10:
+                vol = 0.5 * (lo + hi)
+            else:
+                new_vol = vol - fv / vega
+
+                # keep inside bracket; if it jumps out, bisect
+                if new_vol <= lo or new_vol >= hi or not np.isfinite(new_vol):
+                    new_vol = 0.5 * (lo + hi)
+
+                vol = new_vol
+
+            # update bracket based on sign
+            try:
+                fv = f(vol)
+            except Exception:
+                vol = 0.5 * (lo + hi)
+                continue
+
+            if np.sign(f_lo) == np.sign(fv):
+                lo, f_lo = vol, fv
+            else:
+                hi, f_hi = vol, fv
+
+            # bracket got very tight
+            if (hi - lo) < 1e-8:
+                return float(0.5 * (lo + hi))
+
+        return None
 
     def _filter_chain(self, df):
         """Liquidity + sanity filters; returns copy with mid/spread_pct"""
@@ -81,15 +155,11 @@ class IVSurface:
 
         d = df.copy()
 
+        # basic guards
         d["mid"] = (d["bid"] + d["ask"]) / 2
-        d = d[d["mid"] > 0.01]
-
-        # your liquidity filters
-        d = d[(d["lastPrice"] > 0.10) & (d["volume"] > 10) & (d["openInterest"] > 50)]
 
         d["spread"] = d["ask"] - d["bid"]
         d["spread_pct"] = d["spread"] / d["mid"]
-        d = d[d["spread_pct"] <= 0.30]  # 30% max spread
 
         return d
 
@@ -97,9 +167,7 @@ class IVSurface:
         calls_df = self._filter_chain(
             self.stock_option_chain_data[exp_str].get("calls")
         )
-        puts_df = self._filter_chain(
-            self.stock_option_chain_data[exp_str].get("puts")
-        )
+        puts_df = self._filter_chain(self.stock_option_chain_data[exp_str].get("puts"))
 
         if (
             calls_df is None
@@ -125,7 +193,7 @@ class IVSurface:
             if moneyness > 0.5 or moneyness < -0.5:
                 continue  # skip very deep ITM/OTM calls
 
-            iv = self.iv_brentq_binomial(
+            iv = self.iv_newton_fd_binomial(
                 option_price=mid_price, S0=self.spot, K=K, r=self.r, T=T, opttype="C"
             )
             if iv is None or not (0.03 <= iv <= 0.95):
@@ -145,7 +213,7 @@ class IVSurface:
             if moneyness > 0.5 or moneyness < -0.5:
                 continue  # skip very deep ITM/OTM puts
 
-            iv = self.iv_brentq_binomial(
+            iv = self.iv_newton_fd_binomial(
                 option_price=mid_price, S0=self.spot, K=K, r=self.r, T=T, opttype="P"
             )
             if iv is None or not (0.03 <= iv <= 0.95):
@@ -253,3 +321,4 @@ class IVSurface:
         )
 
         self.rbf = rbf
+        return rbf

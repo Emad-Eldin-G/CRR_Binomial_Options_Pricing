@@ -18,7 +18,7 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
     st.session_state["iv_compute_on"] = True
     (XX, TT, IVgrid), rbf = iv_manager(ticker)
     S0 = get_stock_price(ticker)
-    
+
     F = S0 * np.exp(r * T)  # Forward price
     moneyness = np.log(K / F)
 
