@@ -150,6 +150,8 @@ class IVSurface:
 
     def _filter_chain(self, df):
         """Liquidity + sanity filters; returns copy with mid/spread_pct"""
+        """Kept Loose due to yfinance bad data"""
+        
         if df is None or len(df) == 0:
             return df
 
