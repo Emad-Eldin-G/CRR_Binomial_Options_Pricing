@@ -64,7 +64,7 @@ def dp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
             else:
                 pass  # European option, no early exercise
 
-    return float(np.round(option_values[0], 4))
+    return np.float64(option_values[0])
 
 
 @lru_cache(maxsize=32)
@@ -103,7 +103,7 @@ def np_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
 
             option_values[: step + 1] = np.maximum(option_values[: step + 1], exercise)
 
-    return float(np.round(option_values[0], 4))
+    return np.float64(option_values[0])
 
 
 def cpp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
@@ -113,9 +113,9 @@ def cpp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
 
 def get_call_price_from_put(put_price, S0, K, r, T):
     """Calculate call price from put price using put-call parity."""
-    return put_price + S0 - K * np.exp(-r * T)
+    return np.float64(put_price + S0 - K * np.exp(-r * T))
 
 
 def get_put_price_from_call(call_price, S0, K, r, T):
     """Calculate put price from call price using put-call parity."""
-    return call_price + K * np.exp(-r * T) - S0
+    return np.float64(call_price + K * np.exp(-r * T) - S0)
