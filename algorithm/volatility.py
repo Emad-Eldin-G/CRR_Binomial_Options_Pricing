@@ -150,18 +150,22 @@ class IVSurface:
 
     def _filter_chain(self, df):
         """Liquidity + sanity filters; returns copy with mid/spread_pct"""
-        """Kept Loose due to yfinance bad data"""
-        
         if df is None or len(df) == 0:
             return df
 
         d = df.copy()
 
         # basic guards
+        d = d[(d["bid"] > 0.05) & (d["ask"] > 0.05)]
         d["mid"] = (d["bid"] + d["ask"]) / 2
+        d = d[d["mid"] > 0.05]
+
+        # your liquidity filters
+        d = d[(d["lastPrice"] > 0.10) & (d["volume"] > 10) & (d["openInterest"] > 10)]
 
         d["spread"] = d["ask"] - d["bid"]
         d["spread_pct"] = d["spread"] / d["mid"]
+        d = d[d["spread_pct"] <= 0.40]
 
         return d
 
