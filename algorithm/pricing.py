@@ -1,10 +1,11 @@
 from functools import lru_cache
-from helpers.perf import calc_runtime
 from scipy.stats import norm
+from numba import njit
 import numpy as np
 
 
 @lru_cache(maxsize=32)
+@njit(cache=True)
 def black_scholes_price(S0, K, T, r, vol, opttype="C"):
     sqrtT = np.sqrt(T)
     vsqrtT = vol * sqrtT
@@ -19,7 +20,7 @@ def black_scholes_price(S0, K, T, r, vol, opttype="C"):
 
 
 @lru_cache(maxsize=32)
-@calc_runtime
+@njit(cache=True)
 def dp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
     dt = T / N
     q = (np.exp(r * dt) - d) / (u - d)  # risk-neutral probability
@@ -68,7 +69,7 @@ def dp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
 
 
 @lru_cache(maxsize=32)
-@calc_runtime
+@njit(cache=True)
 def np_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
     dt = T / N
     q = (np.exp(r * dt) - d) / (u - d)
