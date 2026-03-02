@@ -48,7 +48,6 @@ def option_inputs():
     return exercise_code, K
 
 
-@st.fragment
 def market_inputs():
     st.title("Market Input Parameters")
     r = st.number_input(
@@ -57,7 +56,6 @@ def market_inputs():
     return round(r, 10)
 
 
-@st.fragment
 def algorithm_inputs():
     st.title("Algorithm Parameters")
 
