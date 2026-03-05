@@ -92,7 +92,8 @@ def greeks_output():
         if not isinstance(greeks_dict, dict):
             return "—"
         v = greeks_dict.get(name.lower(), "—")
-        return f"{v:.6f}" if isinstance(v, (int, float)) else v
+        
+        return f"{v["c"]:.3f} | {v["p"]:.3f}" if isinstance(v, (dict, dict)) else "-"
     
     def tile(label: str, value: str):
             # keep it single-line to avoid markdown code-block rendering
