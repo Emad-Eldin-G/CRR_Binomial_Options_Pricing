@@ -88,31 +88,51 @@ def metrics_output():
 def greeks_output():
     greeks_dict = st.session_state.get("greeks", None)
 
-    def get_val(name: str):
+    def get_val(name: str) -> tuple[float, float]:
         if not isinstance(greeks_dict, dict):
-            return "—"
-        v = greeks_dict.get(name.lower(), "—")
-        
-        return f"{v["c"]:.3f} | {v["p"]:.3f}" if isinstance(v, (dict, dict)) else "-"
+            return (0.0, 0.0)
+        v = greeks_dict.get(name.lower(), None)
+        if not isinstance(v, dict):
+            return (0.0, 0.0)
+
+        c = v.get("c", 0.0)
+        p = v.get("p", 0.0)
+
+        try:
+            c = float(c)
+        except Exception:
+            c = 0.0
+        try:
+            p = float(p)
+        except Exception:
+            p = 0.0
+
+        return (c, p)
     
-    def tile(label: str, value: str):
-            # keep it single-line to avoid markdown code-block rendering
-            return (
-                '<div class="term-tile" '
-                'style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1;">'
-                f'<div class="tile-label">{label}</div>'
-                f'<div class="tile-value">{value}</div>'
-                '</div>'
-            )
+    def tile(label: str, value: tuple):
+        value_C = np.round(value[0], 3)
+        value_P = np.round(value[1], 3)
+
+        return (
+            '<div class="term-tile" '
+            'style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1;">'
+            f'<div class="tile-label">{label}</div>'
+            '<div style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1">'
+            f'<div class="tile-value" style="color: #FA6C50;">{value_C} | {value_P}</div>'
+            '</div>'
+            '</div>'
+        )
     
     panel = st.container(border=False)
     with panel:
         c1, c2 = st.columns(2, gap="small")
         with c1: st.markdown(tile("Delta (Δ)", get_val("delta")), unsafe_allow_html=True)
         with c2: st.markdown(tile("Gamma (Γ)", get_val("gamma")), unsafe_allow_html=True)
+        
         st.write("")
+        
         c3, c4 = st.columns(2, gap="small")
-        with c3: st.markdown(tile("Vega (ν)", get_val("vega")), unsafe_allow_html=True)
+        with c3: st.markdown(tile("Vega (ν)", (get_val("vega"))), unsafe_allow_html=True)
         with c4: st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
 
 @st.fragment
