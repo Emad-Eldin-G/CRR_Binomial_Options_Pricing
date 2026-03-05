@@ -89,11 +89,9 @@ fetch_option_data()
 
 st.write("")
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
-st.write("")
+st.write("--------")
 
 st.sidebar.markdown("## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)")
-
-st.write("--------")
 
 with st.sidebar:
     stock_ticker, S0 = stock_inputs()
