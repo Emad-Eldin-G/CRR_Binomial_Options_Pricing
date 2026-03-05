@@ -18,14 +18,14 @@ html, body, [class*="css"] {
 [data-testid="stSidebar"] { background: #0b0f14; border-right: 1px solid rgba(255,255,255,0.08); }
 
 .term-panel {
-    min-height: 200px;
+    min-height: 250px;
     border: 1px solid rgba(255,255,255,0.10);
     background: rgba(255,255,255,0.03);
     border-radius: 10px;
     padding: 12px 14px;
 }
 .term-title {
-    font-size: 0.85rem;
+    font-size: 1.25rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: rgba(255,255,255,0.60);
@@ -37,8 +37,8 @@ html, body, [class*="css"] {
     border-top: 1px dashed rgba(255,255,255,0.10);
 }
 .term-row:first-of-type { border-top: none; }
-.term-k { color: rgba(255,255,255,0.62); font-size: 0.85rem; }
-.term-v { color: rgba(255,255,255,0.92); font-size: 1.05rem; font-weight: 750; }
+.term-k { color: rgba(255,255,255,0.62); font-size: 1.0rem; }
+.term-v { color: rgba(255,255,255,0.92); font-size: 2rem; font-weight: 600; }
 .term-muted { color: rgba(255,255,255,0.45); font-weight: 650; }
 
 .v-green { color: #2fe47b; }
@@ -56,8 +56,8 @@ html, body, [class*="css"] {
     border-radius: 10px;
     padding: 10px 12px;
 }
-.tile-label { color: rgba(255,255,255,0.60); font-size: 0.78rem; }
-.tile-value { color: rgba(255,255,255,0.92); font-size: 1.05rem; font-weight: 800; margin-top: 6px; }
+.tile-label { color: rgba(255,255,255,0.60); font-size: 1.25rem; }
+.tile-value { color: rgba(255,255,255,0.92); font-size: 1.5rem; font-weight: 800; margin-top: 6px; }
 </style>
 """
 st.markdown(TERMINAL_CSS, unsafe_allow_html=True)
@@ -91,9 +91,9 @@ st.write("")
 st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
 st.write("")
 
-st.sidebar.markdown("""
-## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)
-""")
+st.sidebar.markdown("## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)")
+
+st.write("--------")
 
 with st.sidebar:
     stock_ticker, S0 = stock_inputs()
