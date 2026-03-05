@@ -37,9 +37,9 @@ html, body, [class*="css"] {
     border-top: 1px dashed rgba(255,255,255,0.10);
 }
 .term-row:first-of-type { border-top: none; }
-.term-k { color: rgba(255,255,255,0.62); font-size: 1.0rem; }
-.term-v { color: rgba(255,255,255,0.92); font-size: 2rem; font-weight: 600; }
-.term-muted { color: rgba(255,255,255,0.45); font-weight: 650; }
+.term-k {font-size: 1.0rem; }
+.term-v {font-size: 2rem; font-weight: 600; }
+.term-muted {color: rgba(255,255,255,0.45); font-weight: 650; }
 
 .v-green { color: #2fe47b; }
 .v-red   { color: #ff4d4d; }
@@ -56,8 +56,8 @@ html, body, [class*="css"] {
     border-radius: 10px;
     padding: 10px 12px;
 }
-.tile-label { color: rgba(255,255,255,0.60); font-size: 1.25rem; }
-.tile-value { color: rgba(255,255,255,0.92); font-size: 1.5rem; font-weight: 800; margin-top: 6px; }
+.tile-label {color: rgba(255,255,255,0.60); font-size: 1.25rem; }
+.tile-value {font-size: 1.5rem; font-weight: 800; margin-top: 6px; }
 </style>
 """
 st.markdown(TERMINAL_CSS, unsafe_allow_html=True)

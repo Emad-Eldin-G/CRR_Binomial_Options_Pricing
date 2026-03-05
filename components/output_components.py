@@ -114,13 +114,21 @@ def greeks_output():
         value_P = np.round(value[1], 3)
 
         return (
-            '<div class="term-tile" '
-            'style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1;">'
-            f'<div class="tile-label">{label}</div>'
-            '<div style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1">'
-            f'<div class="tile-value" style="color: #FA6C50;">{value_C} | {value_P}</div>'
+        '<div class="term-tile" '
+        'style="width:100%;aspect-ratio:1;display:flex;flex-direction:column;'
+        'align-items:center;justify-content:flex-start;padding:12px;box-sizing:border-box;">'
+            f'<div class="tile-label" style="text-align:center;margin-bottom:10px;">{label}</div>'
+
+            '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
+            'align-items:center;justify-content:center;gap:8px;">'
+                f'<div class="term-v v-blue" style="text-align:center;">'
+                    f'{value_C} <span style="font-size:0.8rem;color:red;">(C)</span>'
+                '</div>'
+                f'<div class="term-v v-blue" style="=text-align:center;">'
+                    f'{value_P} <span style="font-size:0.8rem;color:red;">(P)</span>'
+                '</div>'
             '</div>'
-            '</div>'
+        '</div>'
         )
     
     panel = st.container(border=False)
