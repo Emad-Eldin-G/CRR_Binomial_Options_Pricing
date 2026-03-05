@@ -10,7 +10,6 @@ GREEKS = [
     ("Gamma", "Γ"),
     ("Theta", "Θ"),
     ("Vega", "ν"),
-    ("Rho", "ρ"),
 ]
 
 
@@ -43,141 +42,130 @@ def price_output():
         unsafe_allow_html=True,
     )
 
-
 @st.fragment
-def arb_metrics_output():
-    arb_data = st.session_state.get("arb_metrics", None)
+def metrics_output():
+    arb_data = st.session_state.get("arb_metrics")
+    iv_value = st.session_state.get("iv_value")
 
-    if not arb_data:
-        st.markdown(
-            """
-            <div class="term-panel">
-                <div class="term-title">Arbitrage Metrics</div>
-                <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v term-muted">—</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
+    # Optional "running" flags (only if you have them)
+    arb_running = st.session_state.get("arb_compute_on", False)
+    iv_running  = st.session_state.get("iv_compute_on", False)
 
-    st.markdown(
-        f"""
-        <div class="term-panel">
-            <div class="term-title">Arbitrage Metrics</div>
-            <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v v-blue">{arb_data["pc_parity"]}</div></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    if arb_running:
+        pc_text, pc_cls = "—", "term-muted"   # or "Calculating..."
+    elif isinstance(arb_data, dict) and arb_data.get("pc_parity") is not None:
+        pc_text, pc_cls = str(arb_data["pc_parity"]), "v-blue"
+    else:
+        pc_text, pc_cls = "—", "term-muted"
+
+    if iv_running:
+        iv_text, iv_cls = "—", "term-muted"   # or "Calculating..."
+    elif iv_value is not None:
+        iv_pct = round(float(iv_value) * 100.0, 4)
+        iv_text, iv_cls = f"{iv_pct}%", "v-blue"
+    else:
+        iv_text, iv_cls = "—", "term-muted"
+
+    html = (
+        '<div class="term-panel">'
+            '<div class="term-title">Metrics</div>'
+
+            '<div class="term-row">'
+            '<div class="term-k">Put-Call Parity</div>'
+                f'<div class="term-v {pc_cls}">{pc_text}</div>'
+            '</div>'
+
+            '<div class="term-row">'
+            '<div class="term-k">Implied Volatility</div>'
+                f'<div class="term-v {iv_cls}">{iv_text}</div>'
+            '</div>'
+        '</div>'
     )
 
+    st.markdown(html, unsafe_allow_html=True)
 
 @st.fragment
 def greeks_output():
     greeks_dict = st.session_state.get("greeks", None)
 
-    html = '<div class="term-panel" style="height: 315px;"><div class="term-title">Greeks</div><div class="tile-grid">'
-    for name, symbol in GREEKS:
-        if greeks_dict is None:
-            val = "—"
-        else:
-            val = greeks_dict.get(name.lower(), "—")
-
-        if isinstance(val, (int, float)):
-            val = f"{val:.6f}"
-
-        html += (
-            f'<div class="term-tile">'
-            f'  <div class="tile-label">{name} ({symbol})</div>'
-            f'  <div class="tile-value">{val}</div>'
-            f"</div>"
-        )
-
-    html += "</div></div>"
-    st.markdown(html, unsafe_allow_html=True)
-
+    def get_val(name: str):
+        if not isinstance(greeks_dict, dict):
+            return "—"
+        v = greeks_dict.get(name.lower(), "—")
+        return f"{v:.6f}" if isinstance(v, (int, float)) else v
+    
+    def tile(label: str, value: str):
+            # keep it single-line to avoid markdown code-block rendering
+            return (
+                '<div class="term-tile" '
+                'style="width:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;aspect-ratio:1;">'
+                f'<div class="tile-label">{label}</div>'
+                f'<div class="tile-value">{value}</div>'
+                '</div>'
+            )
+    
+    panel = st.container(border=False)
+    with panel:
+        c1, c2 = st.columns(2, gap="small")
+        with c1: st.markdown(tile("Delta (Δ)", get_val("delta")), unsafe_allow_html=True)
+        with c2: st.markdown(tile("Gamma (Γ)", get_val("gamma")), unsafe_allow_html=True)
+        st.write("")
+        c3, c4 = st.columns(2, gap="small")
+        with c3: st.markdown(tile("Vega (ν)", get_val("vega")), unsafe_allow_html=True)
+        with c4: st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
 
 @st.fragment
-def iv_greeks_output():
+def iv_graph_output():
     iv_compute_running = st.session_state.get("iv_compute_on", False)
-    iv_value = st.session_state.get("iv_value", None)
     XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if not iv_value:
+    try:
+        if IVgrid is None:
             st.markdown(
                 f"""
-                <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
-                    <div class="term-title">Implied Volatility</div>
-                    <div class="term-row"><div class="term-k">Put-Call Parity</div><div class="term-v term-muted">—</div></div>
-                </div>
-                """,
+            <div class="term-panel" style="min-height: full">
+                <div class="term-title">Implied Volatility Surface</div>
+                <div class="term-row"><div class="term-v term-muted">—</div></div>
+            </div>
+            """,
                 unsafe_allow_html=True,
             )
+
         else:
-            iv_value = np.round(iv_value, 4) if iv_value is not None else "—"
-            iv_value = np.round(iv_value * 100, 4) if iv_value != "—" else iv_value
-            iv_value = str(iv_value) + "%" if iv_value != "—" else iv_value
+            fig = go.Figure(data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)])
 
-            st.markdown(
-                f"""
-                <div class="term-panel" style="height: 315px; margin-bottom: 20px;">
-                    <div class="term-title">Implied Volatility</div>
-                    <div class="term-row"><div class="term-k">Implied Volatility (Rounded)</div><div class="term-v v-blue">{iv_value}</div></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
+            SIDE = 650
+
+            fig.update_layout(
+                title="Implied Volatility Surface",
+                width=SIDE,
+                height=SIDE,
+                margin=dict(l=0, r=0, t=40, b=0),
+                scene=dict(
+                    xaxis_title="log-moneyness",
+                    yaxis_title="T (years)",
+                    zaxis_title="Implied Vol",
+                    aspectmode="cube",
+                    xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
+                    bgcolor="rgba(0,0,0,0)",
+                ),
             )
 
-        greeks_output()
-    with col2:
-        try:
-            if not iv_value or IVgrid is None:
-                st.markdown(
-                    f"""
-                <div class="term-panel" style="height: 650px; margin-bottom: 20px;">
-                    <div class="term-title">Implied Volatility Surface</div>
-                    <div class="term-row"><div class="term-v term-muted">—</div></div>
-                </div>
-                """,
-                    unsafe_allow_html=True,
-                )
+            st.plotly_chart(
+                fig,
+                use_container_width=True,
+                config={
+                    "scrollZoom": True,
+                    "displayModeBar": True,
+                    "displaylogo": False,
+                    "responsive": False,
+                },
+            )
 
-            else:
-                fig = go.Figure(data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)])
-
-                SIDE = 650
-
-                fig.update_layout(
-                    title="Implied Volatility Surface",
-                    width=SIDE,
-                    height=SIDE,
-                    margin=dict(l=0, r=0, t=40, b=0),
-                    scene=dict(
-                        xaxis_title="log-moneyness",
-                        yaxis_title="T (years)",
-                        zaxis_title="Implied Vol",
-                        aspectmode="cube",
-                        xaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                        yaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                        zaxis=dict(color="white", gridcolor="rgba(255,255,255,0.2)"),
-                        bgcolor="rgba(0,0,0,0)",
-                    ),
-                )
-
-                st.plotly_chart(
-                    fig,
-                    width="content",
-                    config={
-                        "scrollZoom": True,
-                        "displayModeBar": True,
-                        "displaylogo": False,
-                        "responsive": False,
-                    },
-                )
-
-        except Exception as e:
-            st.warning(f"Could not display IV surface: {e}")
+    except Exception as e:
+        st.warning(f"Could not display IV surface: {e}")
 
 
 @st.fragment

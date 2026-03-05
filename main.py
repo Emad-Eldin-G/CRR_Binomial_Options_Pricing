@@ -70,10 +70,9 @@ from components.input_components import (
 )
 from components.output_components import (
     price_output,
-    arb_metrics_output,
-    iv_greeks_output,
+    metrics_output,
+    iv_graph_output,
     greeks_output,
-    binomial_tree_output,
 )
 from algorithm.algorithm_manager import alogorithm_manager
 from data.stock_option_chain_data import fetch_option_data
@@ -120,12 +119,20 @@ with st.sidebar:
             with st.sidebar:
                 st.warning("No sufficient option chain data")
 
-c1, c2 = st.columns([2, 1], gap="small")
+c1, c2 = st.columns([60, 40], gap="small")
 with c1:
     price_output()
-    st.write("")
 with c2:
-    arb_metrics_output()
+    metrics_output()
 
-iv_greeks_output()
+st.write("")
+
+panel = st.container()
+with panel:
+    c1, c2 = st.columns([45, 55], gap="small")
+    with c1:
+        greeks_output()
+    with c2:
+        iv_graph_output()
+    
 st.write("")
