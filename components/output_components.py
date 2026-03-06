@@ -184,7 +184,7 @@ def iv_graph_output():
 
             st.plotly_chart(
                 fig,
-                use_container_width=True,
+                width="stretch",
                 config={
                     "scrollZoom": True,
                     "displayModeBar": True,
