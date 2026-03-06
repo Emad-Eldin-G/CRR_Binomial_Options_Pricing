@@ -110,27 +110,36 @@ def greeks_output():
         return (c, p)
     
     def tile(label: str, value: tuple):
-        value_C = np.round(value[0], 3)
-        value_P = np.round(value[1], 3)
+        if value[0] == 0.0 and value[1] == 0.0:
+            value_C = "-"
+            value_P = "-"
+            color = "term-v term-muted"
+        else:
+            value_C = np.round(value[0], 3)
+            value_P = np.round(value[1], 3)
+            color = "term-v v-blue"
 
         return (
-        '<div class="term-tile" '
-        'style="width:100%;aspect-ratio:1;display:flex;flex-direction:column;'
-        'align-items:center;justify-content:flex-start;padding:12px;box-sizing:border-box;">'
-            f'<div class="tile-label" style="text-align:center;margin-bottom:10px;">{label}</div>'
+            '<div class="term-tile" '
+            'style="width:100%;aspect-ratio:1;display:flex;flex-direction:column;'
+            'align-items:center;justify-content:flex-start;padding:12px;box-sizing:border-box;">'
 
-            '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
-            'align-items:center;justify-content:center;gap:8px;">'
-                f'<div class="term-v v-blue" style="text-align:center;">'
-                    f'{value_C} <span style="font-size:0.8rem;color:red;">(C)</span>'
+                f'<div class="tile-label" style="text-align:center;margin-bottom:10px;">{label}</div>'
+
+                '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
+                'align-items:center;justify-content:center;gap:8px;">'
+                    f'<div class="{color}" style="text-align:center;">'
+                        f'{value_C} <span style="font-size:0.8rem;color:red;">(C)</span>'
+                    '</div>'
+
+                    f'<div class="{color}" style="=text-align:center;">'
+                        f'{value_P} <span style="font-size:0.8rem;color:red;">(P)</span>'
+                    '</div>'
                 '</div>'
-                f'<div class="term-v v-blue" style="=text-align:center;">'
-                    f'{value_P} <span style="font-size:0.8rem;color:red;">(P)</span>'
-                '</div>'
+
             '</div>'
-        '</div>'
         )
-    
+        
     panel = st.container(border=False)
     with panel:
         c1, c2 = st.columns(2, gap="small")
