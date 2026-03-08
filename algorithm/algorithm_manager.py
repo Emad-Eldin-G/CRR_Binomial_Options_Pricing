@@ -4,7 +4,7 @@ import numpy as np
 from data.stock_option_chain_data import get_stock_price
 from .pricing import np_price, get_put_price_from_call
 from .volatility import crr_up_down, IVSurface
-from .greeks import get_greeks
+from .greeks import get_option_greeks, get_chain_greeks
 from algorithm.arbitrage import put_call_parity
 
 
@@ -36,16 +36,17 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
             # Can use parity to price other side (saves computation time for European options)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
             put = get_put_price_from_call(call, S0, K, r, T)
-            greeks = get_greeks(S0, K, T, r, N, u, d, optclass=optclass, vol=0.0, V0p=put, V0c=call)
-            st.session_state["greeks"] = greeks
         elif optclass == "A":
             # Price call directly for American options
             put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
-            greeks = get_greeks(S0, K, T, r, N, u, d, optclass=optclass, vol=0.0, V0p=put, V0c=call)
-            st.session_state["greeks"] = greeks
         else:
             return st.warning("Invalid option type selected (must be 'C' or 'P').")
+        
+        greeks = get_option_greeks(S0, K, T, r, N, u, d, optclass=optclass, vol=vol, V0p=put, V0c=call)
+        st.session_state["greeks"] = greeks
+
+        chain_greeks = get_chain_greeks()
     else:
         call = None
         put = None
