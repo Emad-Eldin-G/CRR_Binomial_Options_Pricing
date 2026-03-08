@@ -35,8 +35,8 @@ def price_output():
         f"""
         <div class="term-panel">
             <div class="term-title">Option Price</div>
-            <div class="term-row"><div class="term-k">Call</div><div class="term-v v-green">${call:,.4f}</div></div>
-            <div class="term-row"><div class="term-k">Put</div><div class="term-v v-green">${put:,.4f}</div></div>
+            <div class="term-row"><div class="term-k">Call</div><div class="term-v v-green">${call:,.3f}</div></div>
+            <div class="term-row"><div class="term-k">Put</div><div class="term-v v-green">${put:,.3f}</div></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -61,7 +61,7 @@ def metrics_output():
     if iv_running:
         iv_text, iv_cls = "—", "term-muted"   # or "Calculating..."
     elif iv_value is not None:
-        iv_pct = round(float(iv_value) * 100.0, 4)
+        iv_pct = round(float(iv_value) * 100.0, 2)
         iv_text, iv_cls = f"{iv_pct}%", "v-blue"
     else:
         iv_text, iv_cls = "—", "term-muted"
