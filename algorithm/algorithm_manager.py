@@ -2,10 +2,9 @@ import streamlit as st
 import numpy as np
 
 from data.stock_option_chain_data import get_stock_price
-from .pricing import np_price, get_put_price_from_call
-from .volatility import crr_up_down, IVSurface
-from .greeks import get_option_greeks, get_chain_greeks
-from algorithm.arbitrage import put_call_parity
+from algorithm.pricing import np_price, get_put_price_from_call
+from algorithm.volatility import crr_up_down, IVSurface
+from algorithm.greeks import get_option_greeks, get_chain_greeks
 
 
 @st.cache_data(ttl="1d", show_spinner=False)  # Data Cached on _date_key daily
@@ -36,14 +35,18 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
             # Can use parity to price other side (saves computation time for European options)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
             put = get_put_price_from_call(call, S0, K, r, T)
+            st.session_state["pc_parity"] = True
         elif optclass == "A":
             # Price call directly for American options
             put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
+            st.session_state["pc_parity"] = False
         else:
             return st.warning("Invalid option type selected (must be 'C' or 'P').")
-        
-        greeks = get_option_greeks(S0, K, T, r, N, u, d, optclass=optclass, vol=vol, V0p=put, V0c=call)
+
+        greeks = get_option_greeks(
+            S0, K, T, r, N, u, d, optclass=optclass, vol=vol, V0p=put, V0c=call
+        )
         st.session_state["greeks"] = greeks
 
         chain_greeks = get_chain_greeks()
@@ -51,9 +54,6 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
         call = None
         put = None
 
-    pc_parity = put_call_parity(S0, K, T, r, call, put, optclass)
-
-    st.session_state["arb_metrics"] = {"pc_parity": pc_parity}
     st.session_state["option_price"] = [call, put]
     st.session_state["iv_value"] = vol
     st.session_state["iv_data"] = (XX, TT, IVgrid)

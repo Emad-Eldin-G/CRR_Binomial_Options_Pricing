@@ -96,11 +96,13 @@ st.markdown(
 
     <hr>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 with st.sidebar:
-    st.markdown("## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)")
+    st.markdown(
+        "## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)"
+    )
 
     stock_ticker, S0 = stock_inputs()
     exercise, K = option_inputs()
@@ -141,5 +143,5 @@ with c1:
     chain_greeks()
 with c2:
     iv_graph_output()
-    
+
 st.write("")

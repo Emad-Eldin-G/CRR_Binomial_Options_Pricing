@@ -1,6 +1,4 @@
 import streamlit as st
-from algorithm.volatility import IVSurface
-from scipy.interpolate import UnivariateSpline, Rbf
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
@@ -42,24 +40,27 @@ def price_output():
         unsafe_allow_html=True,
     )
 
+
 @st.fragment
 def metrics_output():
-    arb_data = st.session_state.get("arb_metrics")
+    pc_parity = st.session_state.get("pc_parity")
     iv_value = st.session_state.get("iv_value")
 
     # Optional "running" flags (only if you have them)
     arb_running = st.session_state.get("arb_compute_on", False)
-    iv_running  = st.session_state.get("iv_compute_on", False)
+    iv_running = st.session_state.get("iv_compute_on", False)
 
     if arb_running:
-        pc_text, pc_cls = "—", "term-muted"   # or "Calculating..."
-    elif isinstance(arb_data, dict) and arb_data.get("pc_parity") is not None:
-        pc_text, pc_cls = str(arb_data["pc_parity"]), "v-blue"
+        pc_text, pc_cls = "—", "term-muted"  # or "Calculating..."
+    elif pc_parity:
+        pc_text, pc_cls = str(True), "v-blue"
+    elif not pc_parity:
+        pc_text, pc_cls = str(False), "v-blue"
     else:
         pc_text, pc_cls = "—", "term-muted"
 
     if iv_running:
-        iv_text, iv_cls = "—", "term-muted"   # or "Calculating..."
+        iv_text, iv_cls = "—", "term-muted"  # or "Calculating..."
     elif iv_value is not None:
         iv_pct = round(float(iv_value) * 100.0, 2)
         iv_text, iv_cls = f"{iv_pct}%", "v-blue"
@@ -68,21 +69,20 @@ def metrics_output():
 
     html = (
         '<div class="term-panel">'
-            '<div class="term-title">Metrics</div>'
-
-            '<div class="term-row">'
-            '<div class="term-k">Put-Call Parity</div>'
-                f'<div class="term-v {pc_cls}">{pc_text}</div>'
-            '</div>'
-
-            '<div class="term-row">'
-            '<div class="term-k">Implied Volatility</div>'
-                f'<div class="term-v {iv_cls}">{iv_text}</div>'
-            '</div>'
-        '</div>'
+        '<div class="term-title">Metrics</div>'
+        '<div class="term-row">'
+        '<div class="term-k">Put-Call Parity</div>'
+        f'<div class="term-v {pc_cls}">{pc_text}</div>'
+        "</div>"
+        '<div class="term-row">'
+        '<div class="term-k">Implied Volatility</div>'
+        f'<div class="term-v {iv_cls}">{iv_text}</div>'
+        "</div>"
+        "</div>"
     )
 
     st.markdown(html, unsafe_allow_html=True)
+
 
 @st.fragment
 def greeks_output():
@@ -108,7 +108,7 @@ def greeks_output():
             p = 0.0
 
         return (c, p)
-    
+
     def tile(label: str, value: tuple):
         if value[0] == 0.0 and value[1] == 0.0:
             value_C = "-"
@@ -123,30 +123,33 @@ def greeks_output():
             '<div class="term-tile" '
             'style="width:100%;aspect-ratio:1;display:flex;flex-direction:column;'
             'align-items:center;justify-content:flex-start;padding:12px;box-sizing:border-box;">'
-
-                f'<div class="term-title" style="text-align:center;margin-bottom:10px;">{label}</div>'
-
-                '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
-                'align-items:center;justify-content:center;gap:8px;">'
-                    f'<div class="{color}" style="text-align:center;">'
-                        f'{value_C} <span style="font-size:0.8rem;color:red;">(C)</span>'
-                    '</div>'
-
-                    f'<div class="{color}" style="=text-align:center;">'
-                        f'{value_P} <span style="font-size:0.8rem;color:red;">(P)</span>'
-                    '</div>'
-                '</div>'
-
-            '</div>'
+            f'<div class="term-title" style="text-align:center;margin-bottom:10px;">{label}</div>'
+            '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
+            'align-items:center;justify-content:center;gap:8px;">'
+            f'<div class="{color}" style="text-align:center;">'
+            f'{value_C} <span style="font-size:0.8rem;color:red;">(C)</span>'
+            "</div>"
+            f'<div class="{color}" style="=text-align:center;">'
+            f'{value_P} <span style="font-size:0.8rem;color:red;">(P)</span>'
+            "</div>"
+            "</div>"
+            "</div>"
         )
-        
-    panel = st.container(border=False,)
+
+    panel = st.container(
+        border=False,
+    )
     with panel:
         c1, c2, c3, c4 = st.columns(4, gap="small")
-        with c1: st.markdown(tile("Delta (Δ)", get_val("delta")), unsafe_allow_html=True)
-        with c2: st.markdown(tile("Gamma (Γ)", get_val("gamma")), unsafe_allow_html=True)
-        with c3: st.markdown(tile("Vega (ν)", (get_val("vega"))), unsafe_allow_html=True)
-        with c4: st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
+        with c1:
+            st.markdown(tile("Delta (Δ)", get_val("delta")), unsafe_allow_html=True)
+        with c2:
+            st.markdown(tile("Gamma (Γ)", get_val("gamma")), unsafe_allow_html=True)
+        with c3:
+            st.markdown(tile("Vega (ν)", (get_val("vega"))), unsafe_allow_html=True)
+        with c4:
+            st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
+
 
 @st.fragment()
 def chain_greeks() -> None:
@@ -154,7 +157,7 @@ def chain_greeks() -> None:
         body=f"""
         <div class="term-title">Option Chain Greeks</div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
 
     chain_greek_data = st.session_state.get("chain_greek_data", {})
@@ -171,9 +174,9 @@ def chain_greeks() -> None:
         return
 
     dummy = {
-        "x": [90, 95, 100, 105, 110],      
-        "y": ["1W", "1M", "3M"],           
-        "z": [                           
+        "x": [90, 95, 100, 105, 110],
+        "y": ["1W", "1M", "3M"],
+        "z": [
             [0.001, 0.002, 0.003, 0.002, 0.001],
             [0.0015, 0.0025, 0.0035, 0.0025, 0.0015],
             [0.002, 0.003, 0.004, 0.003, 0.002],
@@ -213,7 +216,7 @@ def iv_graph_output():
         body=f"""
         <div class="term-title">Implied Volatility Surface</div>
         """,
-        unsafe_allow_html=True
+        unsafe_allow_html=True,
     )
     XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
@@ -228,11 +231,10 @@ def iv_graph_output():
                 unsafe_allow_html=True,
             )
         else:
-
             fig = go.Figure(data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)])
 
             fig.update_layout(
-                title=f"{st.session_state["stock_ticker"]} (IV)",
+                title=f"{st.session_state['stock_ticker']} (IV)",
                 width=500,
                 height=650,
                 margin=dict(l=0, r=0, t=40, b=0),

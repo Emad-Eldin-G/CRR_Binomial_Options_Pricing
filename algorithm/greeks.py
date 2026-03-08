@@ -1,18 +1,26 @@
 import numpy as np
 import pandas as pd
 import numba as nb
-from .volatility import crr_up_down
-from .pricing import np_price
+from algorithm.volatility import crr_up_down
+from algorithm.pricing import np_price
+
 
 def get_option_greeks(
-    S0, K, T, r, N, u, d,
-    vol,          # pass your IV here; if None we'll infer from u
-    V0p, V0c,
+    S0,
+    K,
+    T,
+    r,
+    N,
+    u,
+    d,
+    vol,  # pass your IV here; if None we'll infer from u
+    V0p,
+    V0c,
     optclass="E",
-    bumpV_rel=1e-2,    # 1% spot bump for delta
-    bumpG_rel=5e-3,    # 0.5% spot bump for gamma
-    bumpSig=1e-2,      # 1 vol point (0.01) for vega
-    bumpT=1/365,       # 1 day (in years) for theta
+    bumpV_rel=1e-2,  # 1% spot bump for delta
+    bumpG_rel=5e-3,  # 0.5% spot bump for gamma
+    bumpSig=1e-2,  # 1 vol point (0.01) for vega
+    bumpT=1 / 365,  # 1 day (in years) for theta
 ) -> dict[str, dict[str, float]]:
 
     # ---- Delta ----
@@ -48,8 +56,8 @@ def get_option_greeks(
     Vsig_p_p = np_price(S0, K, T, r, N, u_p, d_p, "P", optclass)
     Vsig_m_p = np_price(S0, K, T, r, N, u_m, d_m, "P", optclass)
 
-    vega_c = ((Vsig_p_c - Vsig_m_c) / (2.0 * bumpSig) * 0.01)
-    vega_p = ((Vsig_p_p - Vsig_m_p) / (2.0 * bumpSig) * 0.01)
+    vega_c = (Vsig_p_c - Vsig_m_c) / (2.0 * bumpSig) * 0.01
+    vega_p = (Vsig_p_p - Vsig_m_p) / (2.0 * bumpSig) * 0.01
 
     # ---- Theta ----
     bumpT = min(bumpT, 0.49 * T) if T > 0 else bumpT
@@ -72,9 +80,10 @@ def get_option_greeks(
     return {
         "delta": {"c": float(delta_c), "p": float(delta_p)},
         "gamma": {"c": float(gamma_c), "p": float(gamma_p)},
-        "vega":  {"c": float(vega_c),  "p": float(vega_p)},
+        "vega": {"c": float(vega_c), "p": float(vega_p)},
         "theta": {"c": float(theta_c), "p": float(theta_p)},
     }
+
 
 def get_chain_greeks():
     pass

@@ -1,13 +1,10 @@
 import numpy as np
 import collections
-from .pricing import np_price
-from functools import lru_cache
+from algorithm.pricing import np_price
 import pandas as pd
-from scipy.optimize import brentq
 from datetime import datetime, timezone
 import streamlit as st
 from scipy.interpolate import UnivariateSpline, Rbf
-import plotly.graph_objects as go
 
 
 def crr_up_down(vol, dt):
@@ -21,7 +18,7 @@ def crr_up_down(vol, dt):
 
 
 class IVSurface:
-    def __init__(self, ticker):
+    def __init__(self, ticker) -> None:
         self.ticker = ticker
         self.spot = None
         self.stock_option_chain_data = collections.defaultdict(dict)
@@ -256,7 +253,9 @@ class IVSurface:
             np.array(self.iv_data_iv),
         )
 
-    def smooth_smiles(self, x, T, iv, s_scale=0.002, mad_z=4.0, min_pts=6):
+    def smooth_smiles(
+        self, x, T, iv, s_scale=0.002, mad_z=4.0, min_pts=6
+    ) -> pd.DataFrame:
         """
         x: log-moneyness array
         T: year fraction array
@@ -313,7 +312,7 @@ class IVSurface:
 
         return XX, TT, IVgrid
 
-    def build_rbf(self, df_s, rbf_smooth=0.002):
+    def build_rbf(self, df_s, rbf_smooth=0.002) -> Rbf:
         """
         df_s must contain columns x, T, iv_smooth
         Builds the RBF interpolator and stores it in self.rbf

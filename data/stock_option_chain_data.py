@@ -2,10 +2,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 import collections
-from datetime import datetime, timezone
-from functools import lru_cache
 import streamlit as st
-from zoneinfo import ZoneInfo
 
 
 @st.cache_data(ttl="1d", show_spinner="Fetching Option Chain Data...")

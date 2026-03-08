@@ -107,6 +107,22 @@ def np_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
     return np.float64(option_values[0])
 
 
+def put_call_parity(S0, K, T, r, call_price, put_price, optclass="E") -> None | float:
+    """
+    Calculate the put-call parity.
+
+    LHS = C + Ke^(-rT)
+    RHS = P + S0
+    """
+
+    if optclass != "E":
+        return None
+
+    lhs = call_price + (K * np.exp(-r * T))
+    rhs = put_price + S0
+    return np.isclose(lhs, rhs)
+
+
 def cpp_price(S0, K, T, r, N, u, d, opttype="C", optclass="E"):
     # Will use C++ Python bindings when available
     return np_price(S0, K, T, r, N, u, d, opttype, optclass)
