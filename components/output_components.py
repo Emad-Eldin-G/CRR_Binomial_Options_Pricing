@@ -124,7 +124,7 @@ def greeks_output():
             'style="width:100%;aspect-ratio:1;display:flex;flex-direction:column;'
             'align-items:center;justify-content:flex-start;padding:12px;box-sizing:border-box;">'
 
-                f'<div class="tile-label" style="text-align:center;margin-bottom:10px;">{label}</div>'
+                f'<div class="term-title" style="text-align:center;margin-bottom:10px;">{label}</div>'
 
                 '<div style="flex:1;width:100%;display:flex;flex-direction:column;'
                 'align-items:center;justify-content:center;gap:8px;">'
@@ -140,44 +140,101 @@ def greeks_output():
             '</div>'
         )
         
-    panel = st.container(border=False)
+    panel = st.container(border=False,)
     with panel:
-        c1, c2 = st.columns(2, gap="small")
+        c1, c2, c3, c4 = st.columns(4, gap="small")
         with c1: st.markdown(tile("Delta (Δ)", get_val("delta")), unsafe_allow_html=True)
         with c2: st.markdown(tile("Gamma (Γ)", get_val("gamma")), unsafe_allow_html=True)
-        
-        st.write("")
-        
-        c3, c4 = st.columns(2, gap="small")
         with c3: st.markdown(tile("Vega (ν)", (get_val("vega"))), unsafe_allow_html=True)
         with c4: st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
 
-@st.fragment
+@st.fragment()
+def chain_greeks() -> None:
+    st.markdown(
+        body=f"""
+        <div class="term-title">Option Chain Greeks</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    chain_greek_data = st.session_state.get("chain_greek_data", {})
+
+    if not chain_greek_data:
+        st.markdown(
+            body=f"""
+        <div class="term-panel" style="min-height: full">
+            <div class="term-row"><div class="term-v term-muted">—</div></div>
+        </div>
+        """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    dummy = {
+        "x": [90, 95, 100, 105, 110],      
+        "y": ["1W", "1M", "3M"],           
+        "z": [                           
+            [0.001, 0.002, 0.003, 0.002, 0.001],
+            [0.0015, 0.0025, 0.0035, 0.0025, 0.0015],
+            [0.002, 0.003, 0.004, 0.003, 0.002],
+        ],
+    }
+
+    fig = go.Figure(
+        data=go.Heatmap(
+            z=dummy["z"],
+            x=dummy["x"],
+            y=dummy["y"],
+        )
+    )
+
+    fig.update_layout(
+        title=f"Delta (Δ)",
+        width=500,
+        height=650,
+        margin=dict(l=0, r=0, t=40, b=0),
+    )
+
+    st.plotly_chart(
+        fig,
+        width="stretch",
+        config={
+            "scrollZoom": True,
+            "displayModeBar": True,
+            "displaylogo": False,
+            "responsive": True,
+        },
+    )
+
+
+@st.fragment()
 def iv_graph_output():
-    iv_compute_running = st.session_state.get("iv_compute_on", False)
+    st.markdown(
+        body=f"""
+        <div class="term-title">Implied Volatility Surface</div>
+        """,
+        unsafe_allow_html=True
+    )
     XX, TT, IVgrid = st.session_state.get("iv_data", (None, None, None))
 
     try:
         if IVgrid is None:
             st.markdown(
-                f"""
+                body=f"""
             <div class="term-panel" style="min-height: full">
-                <div class="term-title">Implied Volatility Surface</div>
                 <div class="term-row"><div class="term-v term-muted">—</div></div>
             </div>
             """,
                 unsafe_allow_html=True,
             )
-
         else:
+
             fig = go.Figure(data=[go.Surface(x=XX, y=TT, z=IVgrid, showscale=True)])
 
-            SIDE = 650
-
             fig.update_layout(
-                title="Implied Volatility Surface",
-                width=SIDE,
-                height=SIDE,
+                title=f"{st.session_state["stock_ticker"]} (IV)",
+                width=500,
+                height=650,
                 margin=dict(l=0, r=0, t=40, b=0),
                 scene=dict(
                     xaxis_title="log-moneyness",

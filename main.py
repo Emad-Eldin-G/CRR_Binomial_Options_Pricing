@@ -73,6 +73,7 @@ from components.output_components import (
     metrics_output,
     iv_graph_output,
     greeks_output,
+    chain_greeks,
 )
 from algorithm.algorithm_manager import alogorithm_manager
 from data.stock_option_chain_data import fetch_option_data
@@ -87,13 +88,20 @@ st.session_state.setdefault("binomial_tree", None)
 
 fetch_option_data()
 
-st.write("")
-st.title("Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈")
-st.write("--------")
+st.markdown(
+    body=f"""
+    <p class="term-title" style="font-size: 2rem; margin-bottom: 20px; color: white">
+        Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈
+    </p>
 
-st.sidebar.markdown("## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)")
+    <hr>
+    """,
+    unsafe_allow_html=True
+)
 
 with st.sidebar:
+    st.markdown("## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)")
+
     stock_ticker, S0 = stock_inputs()
     exercise, K = option_inputs()
     r = market_inputs()
@@ -125,12 +133,13 @@ with c2:
 
 st.write("")
 
-panel = st.container()
-with panel:
-    c1, c2 = st.columns([45, 55], gap="small")
-    with c1:
-        greeks_output()
-    with c2:
-        iv_graph_output()
+greeks_output()
+st.write("")
+
+c1, c2 = st.columns([50, 50], gap="small")
+with c1:
+    chain_greeks()
+with c2:
+    iv_graph_output()
     
 st.write("")
