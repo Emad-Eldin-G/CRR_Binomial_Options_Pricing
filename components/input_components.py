@@ -1,7 +1,8 @@
+import numpy as np
 import streamlit as st
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
 
-
+@st.fragment
 def stock_inputs():
     st.title("Stock Input Parameters")
 
@@ -21,6 +22,13 @@ def stock_inputs():
         disabled=True,
     )
 
+    K = st.number_input(
+        "Strike Price (K)",
+        min_value=1.0,
+        value=get_stock_price(stock_ticker),
+        help="The price at which the option can be exercised | K > 0",
+    )
+
     with st.expander("About Volatility"):
         st.markdown("""
         Volatility represents the degree of variation in asset prices over time.
@@ -28,26 +36,19 @@ def stock_inputs():
         """)
 
     st.session_state["stock_ticker"] = stock_ticker
-    return stock_ticker, S0
+    return stock_ticker, S0, K
 
-
+@st.fragment
 def option_inputs():
     st.title("Option Input Parameters")
 
     exercise = st.selectbox("Exercise Type", ["European", "American"])
 
-    K = st.number_input(
-        "Strike Price (K)",
-        min_value=1.0,
-        value=get_stock_price(ticker=st.session_state.get("stock_ticker", None)),
-        help="The price at which the option can be exercised | K > 0",
-    )
-
     exercise_code = "E" if exercise == "European" else "A"
 
-    return exercise_code, K
+    return exercise_code
 
-
+@st.fragment
 def market_inputs():
     st.title("Market Input Parameters")
     r = st.number_input(
@@ -55,10 +56,13 @@ def market_inputs():
     )
     return round(r, 10)
 
-
+@st.fragment
 def algorithm_inputs():
     st.title("Algorithm Parameters")
 
+    r = st.number_input(
+        "Risk-Free Rate (r)", min_value=0.001, max_value=0.50, value=0.001, step=0.01
+    )
     T = st.number_input(
         "Time to Maturity (T)",
         min_value=0.03,
@@ -75,4 +79,4 @@ def algorithm_inputs():
         help="Higher values increase accuracy but also computation time.",
     )
 
-    return T, N
+    return T, N, np.round(r, 4)
