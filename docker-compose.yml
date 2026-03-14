@@ -1,0 +1,17 @@
+services:
+  crr-pricing:
+    build: .
+    container_name: crr_binomial_pricing
+    ports:
+      - "8501:8501"
+    networks:
+      crr_net:
+        ipv4_address: 172.20.0.10
+    restart: unless-stopped
+
+networks:
+  crr_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24

@@ -17,3 +17,6 @@ __pycache__/*
 .ruff_cache/
 .mypy_cache/
 python_workbook.IPYNB
+*.IPYNB
+.ipynb
+.claude
