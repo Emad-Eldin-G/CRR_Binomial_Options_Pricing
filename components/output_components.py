@@ -11,7 +11,6 @@ GREEKS = [
 ]
 
 
-@st.fragment
 def price_output():
     price_data = st.session_state.get("option_price", None)
 
@@ -41,23 +40,12 @@ def price_output():
     )
 
 
-@st.fragment
 def metrics_output():
     pc_parity = st.session_state.get("pc_parity")
     iv_value = st.session_state.get("iv_value")
 
     # Optional "running" flags (only if you have them)
-    arb_running = st.session_state.get("arb_compute_on", False)
     iv_running = st.session_state.get("iv_compute_on", False)
-
-    if arb_running:
-        pc_text, pc_cls = "—", "term-muted"  # or "Calculating..."
-    elif pc_parity:
-        pc_text, pc_cls = str(True), "v-blue"
-    elif not pc_parity:
-        pc_text, pc_cls = str(False), "v-blue"
-    else:
-        pc_text, pc_cls = "—", "term-muted"
 
     if iv_running:
         iv_text, iv_cls = "—", "term-muted"  # or "Calculating..."
@@ -71,11 +59,9 @@ def metrics_output():
         '<div class="term-panel">'
         '<div class="term-title">Metrics</div>'
         '<div class="term-row">'
-        '<div class="term-k">Put-Call Parity</div>'
-        f'<div class="term-v {pc_cls}">{pc_text}</div>'
+        '<div class="term-k">'
+        "Implied Volatility"
         "</div>"
-        '<div class="term-row">'
-        '<div class="term-k">Implied Volatility</div>'
         f'<div class="term-v {iv_cls}">{iv_text}</div>'
         "</div>"
         "</div>"
@@ -84,7 +70,6 @@ def metrics_output():
     st.markdown(html, unsafe_allow_html=True)
 
 
-@st.fragment
 def greeks_output():
     greeks_dict = st.session_state.get("greeks", None)
 
@@ -151,7 +136,6 @@ def greeks_output():
             st.markdown(tile("Theta (Θ)", get_val("theta")), unsafe_allow_html=True)
 
 
-@st.fragment()
 def chain_greeks() -> None:
     st.markdown(
         body=f"""
@@ -210,7 +194,6 @@ def chain_greeks() -> None:
     )
 
 
-@st.fragment()
 def iv_graph_output():
     st.markdown(
         body=f"""
@@ -265,7 +248,6 @@ def iv_graph_output():
         st.warning(f"Could not display IV surface: {e}")
 
 
-@st.fragment
 def binomial_tree_output():
     tree_data = st.session_state.get("binomial_tree", None)
 
