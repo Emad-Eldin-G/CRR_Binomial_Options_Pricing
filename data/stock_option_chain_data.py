@@ -1,8 +1,8 @@
-import yfinance as yf
+import collections
 import pandas as pd
 import numpy as np
-import collections
 import streamlit as st
+import yfinance as yf
 
 
 @st.cache_data(ttl="1d", show_spinner="Fetching Option Chain Data...")
@@ -10,35 +10,41 @@ def fetch_option_data():
     stock_data = collections.defaultdict(dict)
 
     sp_tickers = pd.read_csv("./data/sp500_companies.csv", sep=",")
-    sp_tickers = np.array(sp_tickers["Symbol"].tolist())[:20]
+    sp_tickers = np.array(sp_tickers["Symbol"].tolist())[:50]
 
     for ticker in sp_tickers:
-        yf_icker = yf.Ticker(ticker)
         try:
-            options = yf_icker.options
+            t = yf.Ticker(ticker)
+            expirations = t.options
+            if not expirations:
+                continue
 
-            for exp in options:
-                opt = yf_icker.option_chain(exp)
-                calls = opt.calls
-                puts = opt.puts
+            stock_data[ticker] = {}
+            for exp in expirations:
+                chain = t.option_chain(exp)
+                calls = chain.calls.copy()
+                puts = chain.puts.copy()
 
-                if len(calls) == 0 and len(puts) == 0:
-                    continue
+                calls["mid"] = (calls["bid"] + calls["ask"]) / 2
+                puts["mid"] = (puts["bid"] + puts["ask"]) / 2
 
-                stock_data[ticker][exp] = {"calls": calls, "puts": puts}
-        except Exception as e:
-            del stock_data[ticker]  # don't include tickers that don't get data
-            print(f"Error fetching data for {ticker}: {e}")
+                calls = calls[(calls["openInterest"] >= 10) & (calls["bid"] >= 0.05)]
+                puts = puts[(puts["openInterest"] >= 10) & (puts["bid"] >= 0.05)]
+
+                exp_date = pd.to_datetime(exp).date()
+                stock_data[ticker][exp_date] = {"calls": calls, "puts": puts}
+
+        except Exception:
+            stock_data.pop(ticker, None)
 
     st.session_state["stock_data"] = stock_data
     return stock_data
 
 
-@st.cache_resource(show_spinner=False)
-@st.spinner("Getting Stock Price")
+@st.cache_resource(show_spinner="Getting Stock Price...")
 def get_stock_price(ticker):
     t = yf.Ticker(ticker)
-    hist = t.history(period="1d")
-    if not hist.empty:
-        return float(hist["Close"].iloc[-1])
-    return None
+    price = t.fast_info["last_price"]
+    if not price:
+        raise ValueError(f"No price data for {ticker}")
+    return np.float64(price)
