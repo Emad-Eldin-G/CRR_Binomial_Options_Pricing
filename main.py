@@ -65,7 +65,6 @@ st.markdown(TERMINAL_CSS, unsafe_allow_html=True)
 from components.input_components import (
     stock_inputs,
     option_inputs,
-    market_inputs,
     algorithm_inputs,
 )
 from components.output_components import (
@@ -88,9 +87,12 @@ st.session_state.setdefault("binomial_tree", None)
 
 fetch_option_data()
 
+st.write("")
+st.write("")
+st.write("")
 st.markdown(
     body=f"""
-    <p class="term-title" style="font-size: 2rem; margin-bottom: 20px; color: white">
+    <p class="term-title" style="font-size: 2rem; color: white">
         Cox, Ross and Rubinstein Binomial Method for Options Pricing 💲📈
     </p>
 
@@ -99,49 +101,63 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-with st.sidebar:
-    st.markdown(
-        "## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)"
-    )
+def sidebar() -> None:
+    with st.sidebar:
+        st.markdown(
+            "## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)"
+        )
 
-    stock_ticker, S0 = stock_inputs()
-    exercise, K = option_inputs()
-    r = market_inputs()
-    T, N = algorithm_inputs()
+        stock_ticker, S0, K = stock_inputs()
+        exercise = option_inputs()
+        T, N, r = algorithm_inputs()
+
+        st.write("")
+        if st.button("Compute Option Price", type="primary", width="content"):
+            st.session_state.price_compute_on = True
+
+            # Reset previous results for new computation
+            st.session_state.option_price = None
+            st.session_state.runtime = None
+            st.session_state.greeks = None
+            st.session_state.binomial_tree = None
+
+            try:
+                alogorithm_manager(
+                    ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
+                )
+            except ValueError:
+                with st.sidebar:
+                    st.warning("No sufficient option chain data")
+
+
+@st.fragment
+def dashboard() -> None:
+    c1, c2 = st.columns([60, 40], gap="small")
+    with c1:
+        price_output()
+    with c2:
+        metrics_output()
 
     st.write("")
-    if st.button("Compute Option Price", type="primary", width="content"):
-        st.session_state.price_compute_on = True
 
-        # Reset previous results for new computation
-        st.session_state.option_price = None
-        st.session_state.runtime = None
-        st.session_state.greeks = None
-        st.session_state.binomial_tree = None
+    greeks_output()
+    st.write("")
 
-        try:
-            alogorithm_manager(
-                ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
-            )
-        except ValueError:
-            with st.sidebar:
-                st.warning("No sufficient option chain data")
+    c1, c2 = st.columns([50, 50], gap="small")
+    with c1:
+        chain_greeks()
+    with c2:
+        iv_graph_output()
 
-c1, c2 = st.columns([60, 40], gap="small")
-with c1:
-    price_output()
-with c2:
-    metrics_output()
+    st.write("")
 
-st.write("")
 
-greeks_output()
-st.write("")
+def main() -> None:
+    sidebar()
+    dashboard()
 
-c1, c2 = st.columns([50, 50], gap="small")
-with c1:
-    chain_greeks()
-with c2:
-    iv_graph_output()
-
-st.write("")
+try:
+    main()
+except Exception as e:
+    st.warning("something went wrong")
+    st.error(e)
