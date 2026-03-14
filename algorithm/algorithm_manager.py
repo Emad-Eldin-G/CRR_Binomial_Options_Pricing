@@ -22,7 +22,9 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
     F = S0 * np.exp(r * T)  # Forward price
     moneyness = np.log(K / F)
 
-    vol = rbf(moneyness, T) if rbf else 0.2  # Fallback to 20% if RBF fails
+    vol = (
+        float(rbf(np.array([[moneyness, T]]))[0]) if rbf else 0.2
+    )  # Fallback to 20% if RBF fails
     vol = np.float64(vol)  # Ensure it's a scalar float
     st.session_state["iv_compute_on"] = False
 
@@ -35,12 +37,10 @@ def alogorithm_manager(ticker, S0, K, T, r, N, optclass):
             # Can use parity to price other side (saves computation time for European options)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
             put = get_put_price_from_call(call, S0, K, r, T)
-            st.session_state["pc_parity"] = True
         elif optclass == "A":
             # Price call directly for American options
             put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
-            st.session_state["pc_parity"] = False
         else:
             return st.warning("Invalid option type selected (must be 'C' or 'P').")
 
