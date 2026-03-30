@@ -53,15 +53,12 @@ def option_inputs():
 
     exercise_code = "E" if exercise == "European" else "A"
 
+    with st.expander("About the Risk-Free Rate"):
+        st.markdown("""
+        The risk-free rate used in this engine is the closest matching rate based on the time to maturity of the option, sourced from current market data.
+        """)
+
     return exercise_code
-
-
-def market_inputs():
-    st.title("Market Input Parameters")
-    r = st.number_input(
-        "Risk-Free Rate (r)", min_value=0.001, max_value=0.50, value=0.001, step=0.01
-    )
-    return round(r, 10)
 
 
 def algorithm_inputs():
@@ -75,6 +72,7 @@ def algorithm_inputs():
         step=0.00001,
         help="0.00275 years ≈ 1 day, 1 year = 1.00",
     )
+    
     N = st.number_input(
         "Number of Steps (N)",
         min_value=1,
