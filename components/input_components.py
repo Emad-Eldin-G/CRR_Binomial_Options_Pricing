@@ -1,6 +1,7 @@
 import numpy as np
 import streamlit as st
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
+from data.risk_free_rate import get_risk_free_rate
 
 
 def stock_inputs():
@@ -66,16 +67,13 @@ def market_inputs():
 def algorithm_inputs():
     st.title("Algorithm Parameters")
 
-    r = st.number_input(
-        "Risk-Free Rate (r)", min_value=0.001, max_value=0.50, value=0.001, step=0.01
-    )
     T = st.number_input(
         "Time to Maturity (T)",
-        min_value=0.03,
+        min_value=0.00275,  # ~1 day in years
         max_value=50.00,
         value=1.00,
-        step=0.01,
-        help="Time in years until option expiration | T > 0",
+        step=0.00001,
+        help="0.00275 years ≈ 1 day, 1 year = 1.00",
     )
     N = st.number_input(
         "Number of Steps (N)",
@@ -84,5 +82,9 @@ def algorithm_inputs():
         value=1000,
         help="Higher values increase accuracy but also computation time.",
     )
+
+    days_to_expiry = int(T * 365)
+    r = get_risk_free_rate(days_to_expiry)
+    st.session_state["risk_free_rate"] = float(np.round(r, 4))
 
     return T, N, np.round(r, 4)
