@@ -43,26 +43,33 @@ def price_output():
 def metrics_output():
     pc_parity = st.session_state.get("pc_parity")
     iv_value = st.session_state.get("iv_value")
+    r_value = st.session_state.get("risk_free_rate")
 
-    # Optional "running" flags (only if you have them)
     iv_running = st.session_state.get("iv_compute_on", False)
 
     if iv_running:
-        iv_text, iv_cls = "—", "term-muted"  # or "Calculating..."
+        iv_text, iv_cls = "—", "term-muted"
     elif iv_value is not None:
         iv_pct = round(float(iv_value) * 100.0, 2)
         iv_text, iv_cls = f"{iv_pct}%", "v-blue"
     else:
         iv_text, iv_cls = "—", "term-muted"
 
+    if r_value is not None:
+        r_text, r_cls = f"{round(r_value * 100, 4)}%", "v-blue"
+    else:
+        r_text, r_cls = "—", "term-muted"
+
     html = (
         '<div class="term-panel">'
         '<div class="term-title">Metrics</div>'
         '<div class="term-row">'
-        '<div class="term-k">'
-        "Implied Volatility"
-        "</div>"
+        '<div class="term-k">Implied Volatility</div>'
         f'<div class="term-v {iv_cls}">{iv_text}</div>'
+        "</div>"
+        '<div class="term-row">'
+        '<div class="term-k">Risk-Free Rate (r)</div>'
+        f'<div class="term-v {r_cls}">{r_text}</div>'
         "</div>"
         "</div>"
     )
