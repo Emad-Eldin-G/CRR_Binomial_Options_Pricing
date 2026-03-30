@@ -3,7 +3,7 @@
 > In progress...
 
 <img
-src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/dashboard.jpeg"
+src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/dashboard_2.jpeg"
 />
 
 ## How to run project
