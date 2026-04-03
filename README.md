@@ -56,27 +56,15 @@ C_{0} = e^{-rT} \sum_{k=0}^{N}
         C\!\big(S_{0} u^{k} d^{\,N-k}\big)
 ```
 
----
-
-## Difference Between Calls and Puts
-
-| Option Type | Payoff at Maturity | Interpretation                      |
-| ----------- | ------------------ | ----------------------------------- |
-| **Call**    | `max(S_T - K, 0)`  | Right to buy the asset at strike K  |
-| **Put**     | `max(K - S_T, 0)`  | Right to sell the asset at strike K |
-
-Both are priced using the same binomial formulas; only the payoff function changes.
+<img
+src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/backward_induction.png"
+/>
 
 ---
-
-## European vs American Options
-
-In the binomial tree:
-
-* **European:** only use discounted expected value at each node.
-* **American:** at each node compare:
-  continuation value **vs** immediate exercise payoff,
-  and take the **maximum**.
 
 ## Implied Volatility (**σ'**)
-This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces. Meaning the σ' value is not theoretical, but rather represents market activity, making the project realistic.
+This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces. Meaning the σ' value is not theoretical, but rather represents market activity, making the project "market-accurate".  
+
+<img
+src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/iv_surface.png"
+/>
