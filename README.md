@@ -55,7 +55,9 @@ C_{0} = e^{-rT} \sum_{k=0}^{N}
         \binom{N}{k} \, (p^{*})^{k} (1 - p^{*})^{N-k}\,
         C\!\big(S_{0} u^{k} d^{\,N-k}\big)
 ```
+<br>
 
+### Vectorized Backward Induction Dynmic Programming Algorithm
 <img
 src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/backward_induction.png"
 />
