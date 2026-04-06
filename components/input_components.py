@@ -1,9 +1,10 @@
 import numpy as np
 import streamlit as st
+from datetime import date, timedelta
 from data.stock_option_chain_data import fetch_option_data, get_stock_price
-from data.risk_free_rate import get_risk_free_rate
 
 
+@st.fragment
 def stock_inputs():
     st.title("Stock Input Parameters")
 
@@ -45,7 +46,7 @@ def stock_inputs():
     st.session_state["stock_ticker"] = stock_ticker
     return stock_ticker, S0, K
 
-
+@st.fragment
 def option_inputs():
     st.title("Option Input Parameters")
 
@@ -60,19 +61,18 @@ def option_inputs():
 
     return exercise_code
 
-
+@st.fragment
 def algorithm_inputs():
     st.title("Algorithm Parameters")
 
-    T = st.number_input(
-        "Time to Maturity (T)",
-        min_value=0.00275,  # ~1 day in years
-        max_value=50.00,
-        value=1.00,
-        step=0.00001,
-        help="0.00275 years ≈ 1 day, 1 year = 1.00",
+    T_picker = st.date_input(
+        "Option Expiry Date (T)",
+        min_value=date.today() + timedelta(days=1),
+        help="Select the option's expiry date. T is automatically calculated from today.",
     )
-    
+
+    T = (T_picker - date.today()).days / 365.25
+
     N = st.number_input(
         "Number of Steps (N)",
         min_value=1,
@@ -81,8 +81,4 @@ def algorithm_inputs():
         help="Higher values increase accuracy but also computation time.",
     )
 
-    days_to_expiry = int(T * 365)
-    r = get_risk_free_rate(days_to_expiry)
-    st.session_state["risk_free_rate"] = float(np.round(r, 4))
-
-    return T, N, np.round(r, 4)
+    return T, N
