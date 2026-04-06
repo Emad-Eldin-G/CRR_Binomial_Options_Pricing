@@ -94,6 +94,7 @@ class IVSurface:
                 return float(vol)
 
             # finite-difference vega (central difference)
+            # vega = (f(vol + eps) - f(vol - eps)) / (2 * eps) but with dynamic eps based on vol level
             eps = max(1e-4, 1e-2 * vol)
             v1 = max(lo, vol - eps)
             v2 = min(hi, vol + eps)
