@@ -109,7 +109,7 @@ def sidebar() -> None:
 
         stock_ticker, S0, K = stock_inputs()
         exercise = option_inputs()
-        T, N, r = algorithm_inputs()
+        T, N = algorithm_inputs()
 
         st.write("")
         if st.button("Compute Option Price", type="primary", width="content"):
@@ -119,11 +119,12 @@ def sidebar() -> None:
             st.session_state.option_price = None
             st.session_state.runtime = None
             st.session_state.greeks = None
+            st.session_state.risk_free_rate = None
             st.session_state.binomial_tree = None
 
             try:
                 alogorithm_manager(
-                    ticker=stock_ticker, S0=S0, K=K, T=T, r=r, N=N, optclass=exercise
+                    ticker=stock_ticker, S0=S0, K=K, T=T, N=N, optclass=exercise
                 )
             except ValueError:
                 with st.sidebar:
