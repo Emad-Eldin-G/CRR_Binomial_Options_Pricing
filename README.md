@@ -1,11 +1,4 @@
-# Cox, Ross and Rubinstein Binomial Method for Options Pricing using Backward Induction
-> European and American Put/Call Option pricing.  
-> In progress...
-
-<img
-src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/dashboard_2.jpeg"
-/>
-
+# Cox, Ross and Rubinstein Binomial Method for Options Pricing
 ## How to run project
 ### 1. Setup Environment 
 - go to main directory 
