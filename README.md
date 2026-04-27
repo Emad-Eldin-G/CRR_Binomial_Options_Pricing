@@ -27,39 +27,3 @@ pip install -r requirements.txt
 ```bash
 streamlit run main.py
 ```  
-
-<br>
-
-## CRR Binomial Method (Cox-Ross-Rubinstein)
-
-The CRR binomial model prices options by assuming the underlying asset can move **up** or **down** at each step. Under the **risk-neutral measure**, the discounted expected payoff must equal today’s price. This leads to simple recursive pricing at each step of the binomial tree.
-
-### One-step pricing
-
-```math
-C_{0} = e^{-rT} \, E^{*}(C_{T})
-      = e^{-rT} \big( p\,C_{u} + (1 - p)\,C_{d} \big)
-```
-
-### N-step pricing (closed form)
-
-```math
-C_{0} = e^{-rT} \sum_{k=0}^{N}
-        \binom{N}{k} \, (p^{*})^{k} (1 - p^{*})^{N-k}\,
-        C\!\big(S_{0} u^{k} d^{\,N-k}\big)
-```
-<br>
-
-### Vectorized Backward Induction Dynmic Programming Algorithm
-<img
-src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/backward_induction.png"
-/>
-
----
-
-## Implied Volatility (**σ'**)
-This project uses market data that feeds into the volatility data pipeline to create smooth implied volatility surfaces. Meaning the σ' value is not theoretical, but rather represents market activity, making the project "market-accurate".  
-
-<img
-src="https://github.com/Emad-Eldin-G/CRR_Binomial_Options_Pricing/blob/main/data/iv_surface.png"
-/>
