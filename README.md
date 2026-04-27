@@ -6,6 +6,7 @@
 cd <name_of_cloned_to_directory>/
 ```
 - create python virtual environment
+> please use Python version 3.12
 ```bash
 python -m venv venv
 ```
