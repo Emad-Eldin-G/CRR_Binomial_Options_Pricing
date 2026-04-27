@@ -7,60 +7,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-TERMINAL_CSS = """
-<style>
-.block-container { padding-top: 0.8rem; padding-bottom: 1rem; max-width: 1700px;}
-html, body, [class*="css"] {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-}
-[data-testid="stAppViewContainer"] { background: #0b0f14; }
-[data-testid="stHeader"] { background: rgba(0,0,0,0); }
-[data-testid="stSidebar"] { background: #0b0f14; border-right: 1px solid rgba(255,255,255,0.08); }
-
-.term-panel {
-    min-height: 250px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    padding: 12px 14px;
-}
-.term-title {
-    font-size: 1.25rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.60);
-    margin-bottom: 8px;
-}
-.term-row {
-    display: flex; justify-content: space-between; align-items: baseline;
-    padding: 6px 0;
-    border-top: 1px dashed rgba(255,255,255,0.10);
-}
-.term-row:first-of-type { border-top: none; }
-.term-k {font-size: 1.0rem; }
-.term-v {font-size: 2rem; font-weight: 600; }
-.term-muted {color: rgba(255,255,255,0.45); font-weight: 650; }
-
-.v-green { color: #2fe47b; }
-.v-red   { color: #ff4d4d; }
-.v-blue  { color: #57a6ff; }
-
-.tile-grid {
-    display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 10px;
-}
-.term-tile {
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.02);
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-.tile-label {color: rgba(255,255,255,0.60); font-size: 1.25rem; }
-.tile-value {font-size: 1.5rem; font-weight: 800; margin-top: 6px; }
-</style>
-"""
-st.markdown(TERMINAL_CSS, unsafe_allow_html=True)
+# Inject custom CSS for styling
+with open("static/styles.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 from components.input_components import (
     stock_inputs,
@@ -72,24 +21,24 @@ from components.output_components import (
     metrics_output,
     iv_graph_output,
     greeks_output,
-    chain_greeks,
+    pnl_summary_output,
+    pnl_heatmap_output,
 )
-from algorithm.algorithm_manager import alogorithm_manager
+from algorithm.algorithm_manager import algorithm_manager
 from data.stock_option_chain_data import fetch_option_data
 
 # session defaults
 st.session_state.setdefault("option_price", None)
 st.session_state.setdefault("price_compute_on", False)
 st.session_state.setdefault("runtime", None)
-st.session_state.setdefault("arb_metrics", None)
 st.session_state.setdefault("greeks", None)
-st.session_state.setdefault("binomial_tree", None)
 
+# Pre-fetch option chain data on app load
 fetch_option_data()
 
 st.write("")
 st.write("")
-st.write("")
+
 st.markdown(
     body=f"""
     <p class="term-title" style="font-size: 2rem; color: white">
@@ -101,15 +50,16 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+st.sidebar.markdown("""
+### Created by Emadeldin Osman
+""")
+
+
 def sidebar() -> None:
     with st.sidebar:
-        st.markdown(
-            "## Created by [Emadeldin Osman](https://www.linkedin.com/in/emad-gasser/)"
-        )
-
         stock_ticker, S0, K = stock_inputs()
         exercise = option_inputs()
-        T, N = algorithm_inputs()
+        T = algorithm_inputs()
 
         st.write("")
         if st.button("Compute Option Price", type="primary", width="content"):
@@ -120,11 +70,10 @@ def sidebar() -> None:
             st.session_state.runtime = None
             st.session_state.greeks = None
             st.session_state.risk_free_rate = None
-            st.session_state.binomial_tree = None
 
             try:
-                alogorithm_manager(
-                    ticker=stock_ticker, S0=S0, K=K, T=T, N=N, optclass=exercise
+                algorithm_manager(
+                    ticker=stock_ticker, S0=S0, K=K, T=T, optclass=exercise
                 )
             except ValueError:
                 with st.sidebar:
@@ -133,7 +82,8 @@ def sidebar() -> None:
 
 @st.fragment
 def dashboard() -> None:
-    c1, c2 = st.columns([60, 40], gap="small")
+    # ── Row 1: price + model metrics ─────────────────────────────────
+    c1, c2 = st.columns([50, 50], gap="small")
     with c1:
         price_output()
     with c2:
@@ -141,15 +91,26 @@ def dashboard() -> None:
 
     st.write("")
 
+    # ── Row 2: Greeks ─────────────────────────────────────────────────
     greeks_output()
+
     st.write("")
 
-    c1, c2 = st.columns([50, 50], gap="small")
-    with c1:
-        chain_greeks()
-    with c2:
+    # ── Row 3: Analysis tabs ──────────────────────────────────────────
+    tab_pnl, tab_iv, tab_heatmap = st.tabs(
+        ["P&L Summary", "Implied Volatility Surface", "P&L Scenario Matrix"]
+    )
+
+    with tab_pnl:
+        pnl_summary_output()
+
+    with tab_iv:
         iv_graph_output()
 
+    with tab_heatmap:
+        pnl_heatmap_output()
+
+    st.write("")
     st.write("")
 
 
@@ -157,8 +118,9 @@ def main() -> None:
     sidebar()
     dashboard()
 
+
 try:
     main()
 except Exception as e:
-    st.warning("something went wrong")
-    st.error(e)
+    st.warning("Something went wrong, please check the error message below:")
+    st.warning(e)

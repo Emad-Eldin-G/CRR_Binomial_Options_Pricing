@@ -3,21 +3,27 @@ import numpy as np
 
 from data.risk_free_rate import get_risk_free_rate
 from data.stock_option_chain_data import get_stock_price
-from algorithm.pricing import np_price, get_put_price_from_call
+from algorithm.pricing import numba_price, get_put_price_from_call
 from algorithm.volatility import crr_up_down, IVSurface
-from algorithm.greeks import get_option_greeks, get_chain_greeks
+from algorithm.greeks import get_option_greeks
 
 
-@st.cache_data(ttl="1d", show_spinner=False)  # Data Cached on _date_key daily
+@st.cache_data(ttl="1d", show_spinner=False)
 def iv_manager(ticker):
+    """
+    Implied Volatility Manager computes the implied volatility surface for the given ticker,
+    and caches the result daily to avoid redundant computations during the day.
+
+    Returns the grid data for plotting and the RBF interpolator for fast IV queries.
+    """
     iv_surface = IVSurface(ticker)
     (XX, TT, IVgrid), rbf = iv_surface.main_iv_runner()
     return (XX, TT, IVgrid), rbf
 
 
-def alogorithm_manager(ticker, S0, K, T, N, optclass):
+def algorithm_manager(ticker, S0, K, T, optclass, N=1000):
     """
-    Algorithm Manager orchestrates the entire option pricing process, 
+    Algorithm Manager orchestrates the entire option pricing process,
     It fetches the market risk free rate,
     computes the implied volatility surface and interpolator,
     and then uses the selected pricing algorithm to compute the option price and Greeks.
@@ -26,7 +32,7 @@ def alogorithm_manager(ticker, S0, K, T, N, optclass):
     """
     Risk Free Rate
     """
-    days_to_expiry = int(T * 365)
+    days_to_expiry = int(T * 365.25)
     r = get_risk_free_rate(days_to_expiry)
     st.session_state["risk_free_rate"] = float(np.round(r, 4))
 
@@ -47,7 +53,7 @@ def alogorithm_manager(ticker, S0, K, T, N, optclass):
 
     dt = T / N
     u, d = crr_up_down(vol, dt)
-    pricer = np_price
+    pricer = numba_price
 
     if pricer:
         if optclass == "E":
@@ -59,7 +65,8 @@ def alogorithm_manager(ticker, S0, K, T, N, optclass):
             put = pricer(S0, K, T, r, N, u, d, opttype="P", optclass=optclass)
             call = pricer(S0, K, T, r, N, u, d, opttype="C", optclass=optclass)
         else:
-            return st.warning("Invalid option type selected (must be 'C' or 'P').")
+            st.warning("Invalid exercise type selected (must be 'E' or 'A').")
+            return None, None
 
         greeks = get_option_greeks(
             S0, K, T, r, N, u, d, optclass=optclass, vol=vol, V0p=put, V0c=call
@@ -73,5 +80,10 @@ def alogorithm_manager(ticker, S0, K, T, N, optclass):
     st.session_state["option_price"] = [call, put]
     st.session_state["iv_value"] = vol
     st.session_state["iv_data"] = (XX, TT, IVgrid)
-    st.session_state["rbf"] = rbf
+    st.session_state["S0"] = S0
+    st.session_state["K"] = K
+    st.session_state["T"] = T
+    st.session_state["r"] = r
+    st.session_state["vol"] = float(vol)
+    st.session_state["optclass"] = optclass
     return call, put

@@ -1,0 +1,118 @@
+.block-container { padding-top: 0.8rem; padding-bottom: 1rem; max-width: 1700px; }
+html, body, [class*="css"] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+[data-testid="stAppViewContainer"] { background: #0b0f14; }
+[data-testid="stHeader"]           { background: rgba(0,0,0,0); }
+[data-testid="stSidebar"]          { background: #0b0f14; border-right: 1px solid rgba(255,255,255,0.08); }
+
+/* ── Panels ──────────────────────────────────────────── */
+.term-panel {
+    min-height: 150px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+.term-title {
+    font-size: 1.25rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.60);
+    margin-bottom: 8px;
+}
+.term-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-top: 1px dashed rgba(255,255,255,0.10);
+}
+.term-row:first-of-type { border-top: none; }
+.term-k     { font-size: 1.0rem; }
+.term-v     { font-size: 2rem; font-weight: 600; }
+.term-muted { color: rgba(255,255,255,0.45); font-weight: 650; }
+
+/* ── Colours ─────────────────────────────────────────── */
+.v-green  { color: #2fe47b; }
+.v-red    { color: #ff4d4d; }
+.v-blue   { color: #57a6ff; }
+.v-yellow { color: #f5c542; }
+
+.term-tile {
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.02);
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+
+/* ── Greek tiles ─────────────────────────────────────── */
+.term-tile-layout {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 12px;
+    box-sizing: border-box;
+}
+.term-tile .term-title {
+    text-align: center;
+    margin-bottom: 4px;
+}
+.term-tile-body {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+}
+.term-tile-value { text-align: center; }
+.term-tag        { font-size: 0.8rem; color: red; }
+
+/* ── Summary tiles ───────────────────────────────────── */
+.summary-tile {
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.03);
+    border-radius: 10px;
+    padding: 10px 13px;
+    margin-bottom: 7px;
+}
+.summary-tile-label {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 3px;
+}
+.summary-tile-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+.summary-col-header {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+
+/* ── Ghost metric (tile help icon only) ─────────────── */
+/* Hide the empty value line that st.metric renders when value="" */
+[data-testid="stMetricValue"] > div:empty,
+[data-testid="stMetricValue"] > p:empty { display: none; }
+
+/* ── Responsive: 800px and below ────────────────────── */
+@media (max-width: 800px) {
+    .block-container  { padding-top: 0.4rem; }
+    .term-panel       { min-height: 120px; padding: 8px 10px; margin-bottom: 12px; }
+    .term-title       { font-size: 0.85rem; margin-bottom: 4px; }
+    .term-k           { font-size: 0.8rem; }
+    .term-v           { font-size: 1.2rem; }
+.term-tile-layout { height: 130px; padding: 8px; margin-bottom: 15px; }
+}

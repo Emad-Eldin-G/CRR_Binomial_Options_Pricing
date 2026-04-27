@@ -1,11 +1,11 @@
 import numpy as np
 import collections
-from algorithm.pricing import np_price
+from algorithm.pricing import numba_price
 from datetime import date, datetime
 import streamlit as st
 from scipy.interpolate import RBFInterpolator
 
-from data.stock_option_chain_data import fetch_option_data
+from data.stock_option_chain_data import fetch_option_data, get_stock_price
 
 
 def crr_up_down(vol, dt):
@@ -23,7 +23,6 @@ class IVSurface:
         self.spot = None
         self.stock_option_chain_data = collections.defaultdict(dict)
         self.r = 0.04
-        self.q = 0.00
         self.N = 1000
         self.iv_data_x = []
         self.iv_data_y = []
@@ -34,10 +33,22 @@ class IVSurface:
         self.stock_option_chain_data = stock_data.get(ticker, {})
 
     def main_iv_runner(self):
+        """
+        Orchestrates the IV surface construction:
+        1. Builds IV points from option chain data
+        2. Fits RBF interpolator
+        3. Generates grid data for visualization
+        Returns (XX, TT, IVgrid), rbf_interpolator
+            - XX, TT: meshgrid arrays for moneyness and time to expiry
+            - IVgrid: interpolated IV values on the grid
+            - rbf_interpolator: the fitted RBFInterpolator object for IV queries
+        """
+
         x, y, z = self.build_iv_points()
         self.rbf = self.build_rbf(x, y, z)
         XX, TT, IVgrid = self.get_grid_data(x, y, z)
         return (XX, TT, IVgrid), self.rbf
+
 
     def iv_newton_fd_binomial(
         self,
@@ -51,15 +62,21 @@ class IVSurface:
         lo=0.01,
         hi=3.0,
         tol=1e-6,
-        maxiter=30
+        maxiter=30,
     ):
-        
+        """
+        Implied volatility via Newton-FD + bisection fallback.
+        Solves f(vol) = binomial_price(vol) − market_price = 0,
+        using central finite-difference vega as the Newton step.
+        Clamps vol to (lo, hi) each iteration; returns None if no root is found.
+        """
+
         N = self.N
         dt = T / N
 
         def price(vol):
             u, d = crr_up_down(vol, dt)
-            return np_price(S0, K, T, r, N, u, d, opttype=opttype, optclass=optclass)
+            return numba_price(S0, K, T, r, N, u, d, opttype=opttype, optclass=optclass)
 
         def f(vol):
             return price(vol) - option_price
@@ -135,11 +152,28 @@ class IVSurface:
 
         return None
 
-    def build_iv_points_for_expiry(self, exp_date, now, mad_z=4.0, min_pts=6, atm_band=0.03):
+
+    def build_iv_points_for_expiry(
+        self, 
+        exp_date, 
+        now, 
+        mad_z=4.0, 
+        min_pts=6, 
+        atm_band=0.03
+    ) -> None:
+        """
+        Collects IV points for a given expiry date by processing the option chain data.
+        """
+
         calls_df = self.stock_option_chain_data[exp_date].get("calls")
         puts_df = self.stock_option_chain_data[exp_date].get("puts")
 
-        if calls_df is None or puts_df is None or len(calls_df) == 0 or len(puts_df) == 0:
+        if (
+            calls_df is None
+            or puts_df is None
+            or len(calls_df) == 0
+            or len(puts_df) == 0
+        ):
             return
 
         if isinstance(exp_date, datetime):
@@ -152,7 +186,7 @@ class IVSurface:
             return
         T = float(np.round(delta_days / 365.25, 6))
 
-        F = self.spot * np.exp((self.r - self.q) * T)
+        F = self.spot * np.exp(self.r * T)
         local_x, local_iv = [], []
 
         # calls: ATM + OTM (moneyness >= -atm_band)
@@ -212,11 +246,15 @@ class IVSurface:
                 self.iv_data_y.append(T)
                 self.iv_data_iv.append(local_iv[i])
 
+
     def build_iv_points(self):
+        """
+        Orchestrates the collection of IV points across all expiries in the option chain data.
+        """
+
         self.iv_data_x, self.iv_data_y, self.iv_data_iv = [], [], []
 
         if self.spot is None:
-            from data.stock_option_chain_data import get_stock_price
             self.spot = get_stock_price(self.ticker)
 
         now = date.today()
@@ -243,10 +281,15 @@ class IVSurface:
             np.array(self.iv_data_iv),
         )
 
+
     def get_grid_data(self, x, T, iv, nx=60, nT=30):
         """
-        Returns XX, TT, IVgrid (each shape: [nT, nx])
+        Returns XX, TT, IVgrid
+
+        XX, TT: meshgrid arrays for moneyness and time to expiry
+        IVgrid: interpolated IV values on the grid
         """
+
         x_min, x_max = np.quantile(x, [0.02, 0.98])
         T_min, T_max = T.min(), T.max()
 
@@ -260,7 +303,13 @@ class IVSurface:
 
         return XX, TT, IVgrid
 
+
     def build_rbf(self, x, T, iv, rbf_smooth=0.02) -> RBFInterpolator:
+        """
+        Fits an RBFInterpolator to the collected IV points (x, T, iv).
+        Returns the fitted RBFInterpolator object.
+        """
+        
         pts = np.column_stack([x, T])
         rbf = RBFInterpolator(
             pts, iv, kernel="multiquadric", epsilon=1.0, smoothing=rbf_smooth

@@ -3,14 +3,19 @@ import streamlit as st
 import yfinance as yf
 
 TREASURY_TICKERS = {
-    30: "^IRX",   # 13-week (~3 months) for options <= 30 days
-    90: "^IRX",   # 13-week for options <= 90 days
+    30: "^IRX",  # 13-week (~3 months) for options <= 30 days
+    90: "^IRX",  # 13-week for options <= 90 days
     365: "^FVX",  # 5-year for options <= 1 year
     float("inf"): "^TNX",  # 10-year for anything longer
 }
 
+
 @st.cache_data(ttl="1d")
 def get_risk_free_rate(days_to_expiry: int = 365) -> np.float64:
+    """
+    Fetches the risk-free rate from Yahoo Finance based on the time to expiry of the option. 
+    """
+    
     try:
         ticker = next(v for k, v in TREASURY_TICKERS.items() if days_to_expiry <= k)
         t = yf.Ticker(ticker)

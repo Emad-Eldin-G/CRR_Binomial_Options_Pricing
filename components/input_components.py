@@ -40,11 +40,12 @@ def stock_inputs():
     with st.expander("About Volatility"):
         st.markdown("""
         Volatility represents the degree of variation in asset prices over time.
-        The implied volatility is the volatility that is equivilent to the market price of the option.
+        The implied volatility is the volatility that is equivalent to the market price of the option.
         """)
 
     st.session_state["stock_ticker"] = stock_ticker
     return stock_ticker, S0, K
+
 
 @st.fragment
 def option_inputs():
@@ -61,6 +62,7 @@ def option_inputs():
 
     return exercise_code
 
+
 @st.fragment
 def algorithm_inputs():
     st.title("Algorithm Parameters")
@@ -73,12 +75,11 @@ def algorithm_inputs():
 
     T = (T_picker - date.today()).days / 365.25
 
-    N = st.number_input(
-        "Number of Steps (N)",
-        min_value=1,
-        max_value=5000,
-        value=1000,
-        help="Higher values increase accuracy but also computation time.",
-    )
+    with st.expander("About Algorithm Step Size"):
+        st.markdown("""
+        The number of steps (N) in the binomial tree affects the accuracy of the option price.
+        N = 1000 and N = 2000 are used under the hood in different areas of the system.
+        It has been abstracted away from the user to avoid confusion.
+        """)
 
-    return T, N
+    return T

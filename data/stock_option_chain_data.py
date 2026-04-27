@@ -5,8 +5,13 @@ import streamlit as st
 import yfinance as yf
 
 
-@st.cache_data(ttl="1d", show_spinner="Fetching Option Chain Data...")
+@st.cache_data(ttl="3d", show_spinner="Fetching Option Chain Data...")
 def fetch_option_data():
+    """
+    Fetches option chain data for the top 50 S&P 500 companies.
+    Applies filters to ensure liquidity and reasonable bid prices, and calculates mid prices for calls and puts.
+    """
+
     stock_data = collections.defaultdict(dict)
 
     sp_tickers = pd.read_csv("./data/sp500_companies.csv", sep=",")
@@ -37,12 +42,13 @@ def fetch_option_data():
         except Exception:
             stock_data.pop(ticker, None)
 
-    st.session_state["stock_data"] = stock_data
     return stock_data
 
 
 @st.cache_resource(show_spinner="Getting Stock Price...")
 def get_stock_price(ticker):
+    """Fetches the current stock price for a given ticker using yfinance."""
+    
     t = yf.Ticker(ticker)
     price = t.fast_info["last_price"]
     if not price:
